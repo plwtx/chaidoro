@@ -1,6 +1,6 @@
 ![Chaidoro](docs/og-image.jpg)
 
-# Chaidoro | chai.study
+# Chaidoro | chaidoro.study
 
 /ˌtʃaɪˈdɔːroʊ/
 
