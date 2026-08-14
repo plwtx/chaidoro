@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   longBreakInterval: 4,
   autoStartBreak: false,
   autoStartFocus: false,
-  features: { taskManager: false, statistics: false },
+  features: { taskManager: false, statistics: true },
   theme: "system",
   accentColor: "#a78bfa",
   backgroundImageKey: null,
@@ -54,7 +54,17 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
   loadSettings: async () => {
     const stored = await db.settings.get("app");
     if (stored) {
-      set({ settings: { ...DEFAULT_SETTINGS, ...stored } });
+      set({
+        settings: {
+          ...DEFAULT_SETTINGS,
+          ...stored,
+          features: {
+            ...DEFAULT_SETTINGS.features,
+            ...stored.features,
+            statistics: true,
+          },
+        },
+      });
     } else {
       await db.settings.put(DEFAULT_SETTINGS);
     }

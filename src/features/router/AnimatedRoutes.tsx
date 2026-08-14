@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useLocation } from "react-router";
-import { ROUTE_INDEX } from "@/router/routes";
+import { ROUTE_INDEX, ROUTE_FEATURE } from "@/router/routes";
+import ProtectedRoute from "@/router/ProtectedRoute";
 import FocusTimer from "@/features/focus-timer";
 import Loading from "@/components/ui/loading";
 
@@ -21,9 +22,16 @@ function RouteFallback() {
 export default function AnimatedRoutes() {
   const { pathname } = useLocation();
   const Page = PAGES[ROUTE_INDEX[pathname] ?? 0];
+  const feature = ROUTE_FEATURE[pathname];
   return (
     <Suspense fallback={<RouteFallback />}>
-      <Page />
+      {feature ? (
+        <ProtectedRoute feature={feature}>
+          <Page />
+        </ProtectedRoute>
+      ) : (
+        <Page />
+      )}
     </Suspense>
   );
 }
