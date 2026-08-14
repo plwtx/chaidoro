@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useAppStore } from "@/store/index";
 import { timerBridge } from "../services/timerBridge";
+import { soundManager } from "@/lib/soundManager";
+import { notifyTimerComplete } from "@/lib/notifications";
 import type { TimerMode } from "@/types";
 
 function getNextMode(
@@ -43,6 +45,11 @@ export function useTimerBridge() {
       const finishedMode = pre.mode;
       pre.finish();
 
+      soundManager.play(
+        finishedMode === "focus" ? "focusComplete" : "breakComplete"
+      );
+      notifyTimerComplete(finishedMode);
+
       const state = useAppStore.getState();
       const { settings } = state;
 
@@ -55,9 +62,10 @@ export function useTimerBridge() {
         const nextMode = getNextMode(
           finishedMode,
           state.focusCount,
-          settings.longBreakInterval,
+          settings.longBreakInterval
         );
         const duration = getDuration(nextMode, settings);
+        if (nextMode === "focus") soundManager.play("focusStart");
         timerBridge.start("countdown", duration);
         state.start(nextMode, duration, state.taskId);
       }
@@ -82,7 +90,7 @@ export function useTimer() {
       return;
     }
 
-    // idle or finished → determine mode and start
+    // idle or finished - determine mode and start
     const state = useAppStore.getState();
     let mode: TimerMode;
     if (state.status === "finished") {
@@ -96,6 +104,7 @@ export function useTimer() {
     }
 
     const duration = getDuration(mode, state.settings);
+    if (mode === "focus") soundManager.play("focusStart");
     timerBridge.start("countdown", duration);
     state.start(mode, duration, state.activeTaskId);
   }

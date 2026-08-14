@@ -1,5 +1,24 @@
-import type { Settings, Features, Theme, ClockVariant } from "@/types";
+import type {
+  Settings,
+  Features,
+  Theme,
+  ClockVariant,
+  SoundSettings,
+  SoundEventSetting,
+} from "@/types";
 import { db } from "@/db";
+import soundManifest from "@/assets/audio/sounds.json";
+
+// Sound defaults are derived from the manifest so a new event added to
+// sounds.json automatically gets a default entry for existing users too
+// (via the deep-merge in loadSettings).
+function buildDefaultSoundSettings(): SoundSettings {
+  const events: Record<string, SoundEventSetting> = {};
+  for (const [id, def] of Object.entries(soundManifest.events)) {
+    events[id] = { enabled: true, volume: def.defaultVolume ?? 70 };
+  }
+  return { enabled: true, events };
+}
 
 export const DEFAULT_SETTINGS: Settings = {
   key: "app",
@@ -17,6 +36,8 @@ export const DEFAULT_SETTINGS: Settings = {
   backgroundSaturation: 100,
   backgroundContrast: 50,
   clockVariant: "slide",
+  sounds: buildDefaultSoundSettings(),
+  notificationsEnabled: false,
   reducedMotion: false,
   dynamicTitlebar: true,
   titlebarSeparator: "-",
@@ -44,6 +65,12 @@ export interface SettingsSliceActions {
   toggleAutoStart: (
     field: "autoStartBreak" | "autoStartFocus"
   ) => Promise<void>;
+  setSoundsEnabled: (enabled: boolean) => Promise<void>;
+  setSoundEvent: (
+    id: string,
+    patch: Partial<SoundEventSetting>
+  ) => Promise<void>;
+  setNotificationsEnabled: (enabled: boolean) => Promise<void>;
 }
 
 export type SettingsSlice = SettingsSliceState & SettingsSliceActions;
@@ -62,6 +89,16 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
             ...DEFAULT_SETTINGS.features,
             ...stored.features,
             statistics: true,
+          },
+          // Deep-merge so sound events added in newer versions keep their
+          // defaults for users with older stored settings / backups.
+          sounds: {
+            ...DEFAULT_SETTINGS.sounds,
+            ...stored.sounds,
+            events: {
+              ...DEFAULT_SETTINGS.sounds.events,
+              ...stored.sounds?.events,
+            },
           },
         },
       });
@@ -112,5 +149,27 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
   toggleAutoStart: async (field) => {
     const current = get().settings[field];
     await get().updateSettings({ [field]: !current });
+  },
+
+  setSoundsEnabled: async (enabled) => {
+    const { sounds } = get().settings;
+    await get().updateSettings({ sounds: { ...sounds, enabled } });
+  },
+
+  setSoundEvent: async (id, patch) => {
+    const { sounds } = get().settings;
+    await get().updateSettings({
+      sounds: {
+        ...sounds,
+        events: {
+          ...sounds.events,
+          [id]: { ...sounds.events[id], ...patch },
+        },
+      },
+    });
+  },
+
+  setNotificationsEnabled: async (enabled) => {
+    await get().updateSettings({ notificationsEnabled: enabled });
   },
 });
