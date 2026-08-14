@@ -43,7 +43,7 @@ Chaidoro respects your privacy by having no server. Which means the app complete
 
 ## Development
 
-The app is at very early stages and still under development. Hence it is possible to encounter bugs and issues. I would ask you to either submit a [GitHub issue](https://github.com/plwtx/chai.study/issues) or ([dev@chai.study](mailto:dev@chai.study)) mail me any bugs issues you encounter so I can fix them. Thank you in advance.
+The app is at very early stages and still under development. Hence it is possible to encounter bugs and issues. I would ask you to either submit a [GitHub issue](https://github.com/plwtx/chai.study/issues) or ([dev@chaidoro.study](mailto:dev@chaidoro.study)) mail me any bugs issues you encounter so I can fix them. Thank you in advance.
 
 **Roadmap**
 

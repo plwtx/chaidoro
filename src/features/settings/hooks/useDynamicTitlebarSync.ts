@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAppStore } from "@/store";
 
-const DEFAULT_TITLE = "Chaidoro | chai.study";
+const DEFAULT_TITLE = "Chaidoro | chaidoro.study";
 
 const MODE_LABELS: Record<string, string> = {
   focus: "Focus",
