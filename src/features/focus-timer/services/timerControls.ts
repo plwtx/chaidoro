@@ -1,0 +1,92 @@
+import { useAppStore } from "@/store/index";
+import { timerBridge } from "./timerBridge";
+import { soundManager } from "@/lib/soundManager";
+import type { TimerMode } from "@/types";
+
+export function getNextMode(
+  currentMode: TimerMode,
+  focusCount: number,
+  longBreakInterval: number
+): TimerMode {
+  if (currentMode === "focus") {
+    return focusCount >= longBreakInterval ? "long-break" : "break";
+  }
+  return "focus";
+}
+
+export function getDuration(
+  mode: TimerMode,
+  settings: {
+    focusDuration: number;
+    shortBreakDuration: number;
+    longBreakDuration: number;
+  }
+): number {
+  switch (mode) {
+    case "focus":
+      return settings.focusDuration;
+    case "break":
+      return settings.shortBreakDuration;
+    case "long-break":
+      return settings.longBreakDuration;
+  }
+}
+
+export function startTimer() {
+  const state = useAppStore.getState();
+  if (state.status === "running") return;
+
+  if (state.status === "paused") {
+    timerBridge.resume();
+    useAppStore.getState().resume();
+    return;
+  }
+
+  let mode: TimerMode;
+  if (state.status === "finished") {
+    mode = getNextMode(
+      state.mode,
+      state.focusCount,
+      state.settings.longBreakInterval
+    );
+  } else {
+    mode = state.mode;
+  }
+
+  const duration = getDuration(mode, state.settings);
+  if (mode === "focus") soundManager.play("focusStart");
+  timerBridge.start("countdown", duration);
+  state.start(mode, duration, state.activeTaskId);
+}
+
+export function pauseTimer() {
+  const state = useAppStore.getState();
+  if (state.status !== "running") return;
+  timerBridge.pause();
+  useAppStore.getState().pause();
+}
+
+export function endCycleTimer() {
+  const state = useAppStore.getState();
+  if (state.status === "idle") return;
+
+  const currentMode = state.mode;
+
+  if (state.status !== "finished" && state.elapsed > 0) {
+    state.finish();
+  }
+
+  timerBridge.reset();
+  useAppStore.getState().reset();
+
+  // After ending focus, transition to break ;-;
+  if (currentMode === "focus") {
+    const s = useAppStore.getState();
+    const nextMode = getNextMode(
+      "focus",
+      s.focusCount,
+      s.settings.longBreakInterval
+    );
+    useAppStore.setState({ mode: nextMode });
+  }
+}

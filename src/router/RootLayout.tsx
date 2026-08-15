@@ -7,6 +7,7 @@ import { useThemeSync } from "@/features/settings/hooks/useThemeSync";
 import { useDynamicTitlebarSync } from "@/features/settings/hooks/useDynamicTitlebarSync";
 import { useReducedMotionSync } from "@/features/settings/hooks/useReducedMotionSync";
 import { useAppSounds } from "@/hooks/useAppSounds";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 export default function RootLayout() {
   useTimerBridge();
@@ -14,6 +15,7 @@ export default function RootLayout() {
   useDynamicTitlebarSync();
   useReducedMotionSync();
   useAppSounds();
+  useKeyboardShortcuts();
 
   return (
     <div className="bg-brown-50 relative h-screen w-full selection:bg-black/75 selection:text-white">

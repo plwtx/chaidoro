@@ -4,6 +4,7 @@ import SettingsNav, { type SettingsCategory } from "./components/settings-nav";
 import GeneralSettings from "./pages/settings-general";
 import ClockSettings from "./pages/settings-clock";
 import SoundSettings from "./pages/settings-sounds";
+import ShortcutSettings from "./pages/settings-shortcuts";
 import ThemeSettings from "./pages/settings-theme";
 import StorageSettings from "./pages/settings-storage";
 import InformationSettings from "./pages/settings-information";
@@ -12,6 +13,7 @@ const CATEGORIES: SettingsCategory[] = [
   { id: "general", name: "General" },
   { id: "clock", name: "Clock" },
   { id: "sounds", name: "Sounds" },
+  { id: "shortcuts", name: "Shortcuts" },
   { id: "theme", name: "Theme" },
   { id: "storage", name: "Storage" },
   { id: "information", name: "Information" },
@@ -21,6 +23,7 @@ const CATEGORY_COMPONENTS: Record<string, React.ComponentType> = {
   general: GeneralSettings,
   clock: ClockSettings,
   sounds: SoundSettings,
+  shortcuts: ShortcutSettings,
   theme: ThemeSettings,
   storage: StorageSettings,
   information: InformationSettings,

@@ -9,15 +9,19 @@ export interface Features {
   statistics: boolean;
 }
 
-/* Per-event sound preference. Event ids come from src/assets/audio/sounds.json */
 export interface SoundEventSetting {
   enabled: boolean;
-  volume: number; // 0-100
+  volume: number;
 }
 
 export interface SoundSettings {
-  enabled: boolean; // master switch for all sound effects
+  enabled: boolean;
   events: Record<string, SoundEventSetting>;
+}
+
+export interface ShortcutSettings {
+  enabled: boolean;
+  bindings: Record<string, string | null>;
 }
 
 export interface Session {
@@ -69,6 +73,7 @@ export interface Settings {
   backgroundContrast: number;
   clockVariant: ClockVariant;
   sounds: SoundSettings;
+  shortcuts: ShortcutSettings;
   notificationsEnabled: boolean;
   reducedMotion: boolean;
   dynamicTitlebar: boolean;
