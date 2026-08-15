@@ -28,12 +28,14 @@ const COMPLETE_MESSAGES: Record<TimerMode, string> = {
   "long-break": "Long break is over. Ready for your next focus session?",
 };
 
-/* Fired by the timer bridge when a session completes. */
-export function notifyTimerComplete(mode: TimerMode): void {
+const OVERTIME_MESSAGE =
+  "Your focus time is up. Extra time is now being counted - add it to the session or dismiss it.";
+
+export function notifyTimerComplete(mode: TimerMode, overtime = false): void {
   if (!notificationsActive()) return;
   try {
     new Notification("Chaidoro", {
-      body: COMPLETE_MESSAGES[mode],
+      body: overtime ? OVERTIME_MESSAGE : COMPLETE_MESSAGES[mode],
       icon: "/android-chrome-192x192.png",
       // Replaces a previous unread timer notification instead of stacking.
       tag: "chaidoro-timer",

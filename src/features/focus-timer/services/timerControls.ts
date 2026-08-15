@@ -32,9 +32,50 @@ export function getDuration(
   }
 }
 
+export function shouldAutoStart(finishedMode: TimerMode): boolean {
+  const { settings } = useAppStore.getState();
+  return finishedMode === "focus"
+    ? settings.autoStartBreak
+    : settings.autoStartFocus;
+}
+
+export function autoStartNext(finishedMode: TimerMode) {
+  const state = useAppStore.getState();
+  const { settings } = state;
+  const nextMode = getNextMode(
+    finishedMode,
+    state.focusCount,
+    settings.longBreakInterval
+  );
+  const duration = getDuration(nextMode, settings);
+  if (nextMode === "focus") soundManager.play("focusStart");
+  timerBridge.start("countdown", duration);
+  state.start(nextMode, duration, state.taskId);
+}
+
+export async function resolveOvertime(add: boolean) {
+  const state = useAppStore.getState();
+  if (state.status !== "overtime") return;
+
+  timerBridge.reset();
+  await state.resolveOvertime(add);
+
+  if (shouldAutoStart("focus")) autoStartNext("focus");
+}
+
+export function addOvertime() {
+  return resolveOvertime(true);
+}
+
+export function dismissOvertime() {
+  return resolveOvertime(false);
+}
+
 export function startTimer() {
   const state = useAppStore.getState();
   if (state.status === "running") return;
+
+  if (state.status === "overtime") return;
 
   if (state.status === "paused") {
     timerBridge.resume();
@@ -69,6 +110,11 @@ export function pauseTimer() {
 export function endCycleTimer() {
   const state = useAppStore.getState();
   if (state.status === "idle") return;
+
+  if (state.status === "overtime") {
+    dismissOvertime();
+    return;
+  }
 
   const currentMode = state.mode;
 

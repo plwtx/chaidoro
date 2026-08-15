@@ -11,6 +11,7 @@ import {
   startTimer,
   pauseTimer,
   endCycleTimer,
+  addOvertime,
 } from "@/features/focus-timer/services/timerControls";
 import { soundManager } from "@/lib/soundManager";
 import { showSettingsToast } from "@/features/settings/components/settings-toast";
@@ -26,7 +27,9 @@ export function runShortcutAction(
       usePaletteStore.getState().toggle();
       break;
     case "timerToggle":
-      if (state.status === "running") {
+      if (state.status === "overtime") {
+        addOvertime();
+      } else if (state.status === "running") {
         pauseTimer();
       } else {
         startTimer();

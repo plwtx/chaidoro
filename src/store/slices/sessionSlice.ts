@@ -2,16 +2,13 @@ import type { Session } from "@/types";
 import { db } from "@/db";
 
 export interface SessionSliceActions {
-  getSessionsInRange: (
-    start: number,
-    end: number,
-  ) => Promise<Session[]>;
+  getSessionsInRange: (start: number, end: number) => Promise<Session[]>;
   recoverDraft: () => Promise<boolean>;
 }
 
 export type SessionSlice = SessionSliceActions;
 
-export const createSessionSlice = (): SessionSlice => ({
+export const createSessionSlice = (set, get): SessionSlice => ({
   getSessionsInRange: async (start, end) => {
     return db.sessions
       .where("[mode+completedAt]")
@@ -21,6 +18,13 @@ export const createSessionSlice = (): SessionSlice => ({
 
   recoverDraft: async () => {
     const draft = await db.sessionDraft.get("current");
-    return draft !== undefined;
+    if (!draft) return false;
+
+    if (draft.phase === "overtime") {
+      get().restoreOvertime(draft);
+      return false;
+    }
+
+    return true;
   },
 });

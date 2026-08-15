@@ -67,6 +67,11 @@
   --heatmap-3: #372e2c; /* brown-700 */
   --heatmap-4: #262423; /* brown-800 */
 
+  /* Focus border color (desk) */
+  --desk: #dbcbc6; /* brown-200 */
+  --panel-shadow:
+    inset 0 0 0 1px rgba(69, 54, 50, 0.1), 0 12px 34px rgba(38, 36, 35, 0.18);
+
   --loading-bg: #fbf8f7;
   --loading-fg: #735f59;
   --loading-muted: #98817a;
@@ -87,6 +92,11 @@
 .dark {
   --chart-used: #bba6a0;
   --chart-avail: #1b1a19;
+
+  /* Focus border color (desk) */
+  --desk: #121110;
+  --panel-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 12px 34px rgba(0, 0, 0, 0.55);
   /* Dark Heatmap */
   --heatmap-0: #262423; /* brown-800 */
   --heatmap-1: #453632; /* brown-600 */

@@ -10,28 +10,46 @@ const DevSpeedToggle = import.meta.env.DEV
   ? lazy(() => import("./components/dev-speed-toggle"))
   : () => null;
 
+function formatClock(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 function FinishedBanner() {
   const status = useAppStore((s) => s.status);
   const mode = useAppStore((s) => s.mode);
 
-  if (status !== "finished") return null;
+  if (status !== "finished" && status !== "overtime") return null;
 
   const isBreak = mode === "break" || mode === "long-break";
 
   return (
     <div className="fixed inset-x-0 top-0 z-50 flex items-center justify-center bg-black/90 px-4 py-3 backdrop-blur-sm">
       <p className="font-mono text-sm text-zinc-300">
-        {isBreak
-          ? "Break is over, you can start your next session."
-          : "You have finished your session. However, you can continue being productive !"}
+        {status === "overtime"
+          ? "Your time is up. The extra time is being counted, add it to this session or dismiss it."
+          : isBreak
+            ? "Break is over, you can start your next session."
+            : "You have finished your session. However, you can continue being productive !"}
       </p>
     </div>
   );
 }
 
 export default function FocusTimer() {
-  const { seconds, status, mode, focusCount, start, pause, endCycle } =
-    useTimer();
+  const {
+    seconds,
+    status,
+    mode,
+    focusCount,
+    overtimeElapsed,
+    start,
+    pause,
+    endCycle,
+    addOvertime,
+    dismissOvertime,
+  } = useTimer();
   const { hours, minutes } = useDailyTotal();
   const backgroundImageKey = useAppStore((s) => s.settings.backgroundImageKey);
   const backgroundOpacity = useAppStore((s) => s.settings.backgroundOpacity);
@@ -88,12 +106,115 @@ export default function FocusTimer() {
             ))}
           </div>
 
-          <Clock seconds={seconds} />
+          {/* Overtime counts up,  "+" in front of overtime */}
+          <div className="flex items-center">
+            <AnimatePresence>
+              {status === "overtime" && (
+                <motion.span
+                  key="overtime-sign"
+                  className="font-poppins text-brown-800 text-9xl font-extrabold antialiased select-none dark:text-black"
+                  initial={{ opacity: 0, x: 16, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: 16, filter: "blur(6px)" }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  +
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <Clock seconds={seconds} />
+          </div>
 
           {/* Controls */}
           <div className="relative z-40 flex items-center justify-center">
             <AnimatePresence mode="wait">
-              {status === "idle" || status === "finished" ? (
+              {status === "overtime" ? (
+                <motion.div
+                  key="overtime"
+                  className="flex items-center gap-3"
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={{
+                    hidden: {},
+                    visible: { transition: { staggerChildren: 0.06 } },
+                    exit: {
+                      transition: {
+                        staggerChildren: 0.04,
+                        staggerDirection: -1,
+                      },
+                    },
+                  }}
+                >
+                  <motion.button
+                    onClick={addOvertime}
+                    className="bg-brown-500 dark:bg-dark-100 font-poppins cursor-pointer rounded-full px-8 py-3 font-semibold tracking-wide text-white dark:hover:text-white"
+                    variants={{
+                      hidden: {
+                        x: 40,
+                        scale: 0.3,
+                        opacity: 0,
+                        filter: "blur(10px)",
+                      },
+                      visible: {
+                        x: 0,
+                        scale: 1,
+                        opacity: 1,
+                        filter: "blur(0px)",
+                      },
+                      exit: {
+                        x: 40,
+                        scale: 0.3,
+                        opacity: 0,
+                        filter: "blur(10px)",
+                      },
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 280,
+                      damping: 24,
+                    }}
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    add +{formatClock(overtimeElapsed)}
+                  </motion.button>
+
+                  <motion.button
+                    onClick={dismissOvertime}
+                    className="border-brown-400 dark:border-dark-100 text-brown-600 dark:text-dark-100 hover:border-brown-600 hover:text-brown-800 font-poppins cursor-pointer rounded-full border px-5 py-2.5 text-sm dark:hover:border-white dark:hover:text-white"
+                    variants={{
+                      hidden: {
+                        x: -40,
+                        scale: 0.3,
+                        opacity: 0,
+                        filter: "blur(10px)",
+                      },
+                      visible: {
+                        x: 0,
+                        scale: 1,
+                        opacity: 1,
+                        filter: "blur(0px)",
+                      },
+                      exit: {
+                        x: -40,
+                        scale: 0.3,
+                        opacity: 0,
+                        filter: "blur(10px)",
+                      },
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 280,
+                      damping: 24,
+                    }}
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    dismiss
+                  </motion.button>
+                </motion.div>
+              ) : status === "idle" || status === "finished" ? (
                 <motion.button
                   key="start"
                   onClick={start}

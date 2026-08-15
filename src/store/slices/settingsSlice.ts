@@ -27,6 +27,8 @@ export const DEFAULT_SETTINGS: Settings = {
   longBreakInterval: 4,
   autoStartBreak: false,
   autoStartFocus: false,
+  overtimeEnabled: true,
+  focusBorderEnabled: true,
   features: { taskManager: false, statistics: true },
   theme: "system",
   accentColor: "#a78bfa",
@@ -65,6 +67,8 @@ export interface SettingsSliceActions {
   toggleAutoStart: (
     field: "autoStartBreak" | "autoStartFocus"
   ) => Promise<void>;
+  setOvertimeEnabled: (enabled: boolean) => Promise<void>;
+  setFocusBorderEnabled: (enabled: boolean) => Promise<void>;
   setSoundsEnabled: (enabled: boolean) => Promise<void>;
   setSoundEvent: (
     id: string,
@@ -166,6 +170,14 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
   toggleAutoStart: async (field) => {
     const current = get().settings[field];
     await get().updateSettings({ [field]: !current });
+  },
+
+  setOvertimeEnabled: async (enabled) => {
+    await get().updateSettings({ overtimeEnabled: enabled });
+  },
+
+  setFocusBorderEnabled: async (enabled) => {
+    await get().updateSettings({ focusBorderEnabled: enabled });
   },
 
   setSoundsEnabled: async (enabled) => {

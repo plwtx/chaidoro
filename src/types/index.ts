@@ -1,4 +1,9 @@
-export type TimerStatus = "idle" | "running" | "paused" | "finished";
+export type TimerStatus =
+  | "idle"
+  | "running"
+  | "paused"
+  | "finished"
+  | "overtime";
 export type TimerMode = "focus" | "break" | "long-break";
 export type TaskStatus = "todo" | "in-progress" | "done";
 export type Theme = "light" | "dark" | "system";
@@ -44,6 +49,10 @@ export interface SessionDraft {
   pomodoroSetId: string | null;
   lastCheckpointAt: number;
   elapsedAtCheckpoint: number;
+
+  phase?: "overtime";
+  overtimeElapsed?: number;
+  sessionId?: string | null;
 }
 
 export interface Task {
@@ -64,6 +73,8 @@ export interface Settings {
   longBreakInterval: number;
   autoStartBreak: boolean;
   autoStartFocus: boolean;
+  overtimeEnabled: boolean;
+  focusBorderEnabled: boolean;
   features: Features;
   theme: Theme;
   accentColor: string;

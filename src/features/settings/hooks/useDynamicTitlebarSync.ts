@@ -18,6 +18,7 @@ export function useDynamicTitlebarSync() {
   const mode = useAppStore((s) => s.mode);
   const elapsed = useAppStore((s) => s.elapsed);
   const targetDuration = useAppStore((s) => s.targetDuration);
+  const overtimeElapsed = useAppStore((s) => s.overtimeElapsed);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -50,6 +51,14 @@ export function useDynamicTitlebarSync() {
       return;
     }
 
+    if (status === "overtime") {
+      const mins = Math.floor(overtimeElapsed / 60);
+      const secs = overtimeElapsed % 60;
+      const time = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      document.title = `+${time} ${separator} Overtime`;
+      return;
+    }
+
     if (status === "finished") {
       let index = 0;
       document.title = FINISHED_MESSAGES[0];
@@ -62,7 +71,15 @@ export function useDynamicTitlebarSync() {
 
     // idle title
     document.title = DEFAULT_TITLE;
-  }, [enabled, separator, status, mode, elapsed, targetDuration]);
+  }, [
+    enabled,
+    separator,
+    status,
+    mode,
+    elapsed,
+    targetDuration,
+    overtimeElapsed,
+  ]);
 
   useEffect(() => {
     return () => {

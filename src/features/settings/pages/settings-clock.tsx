@@ -17,6 +17,10 @@ export default function ClockSettings() {
   const autoStartBreak = useAppStore((s) => s.settings.autoStartBreak);
   const autoStartFocus = useAppStore((s) => s.settings.autoStartFocus);
   const toggleAutoStart = useAppStore((s) => s.toggleAutoStart);
+  const overtimeEnabled = useAppStore((s) => s.settings.overtimeEnabled);
+  const setOvertimeEnabled = useAppStore((s) => s.setOvertimeEnabled);
+  const focusBorderEnabled = useAppStore((s) => s.settings.focusBorderEnabled);
+  const setFocusBorderEnabled = useAppStore((s) => s.setFocusBorderEnabled);
   const timerStatus = useAppStore((s) => s.status);
 
   const isTimerActive = timerStatus !== "idle";
@@ -118,6 +122,30 @@ export default function ClockSettings() {
             toggleAutoStart("autoStartFocus");
             showSettingsToast(
               `Focus cycle: Auto start ${autoStartFocus ? "disabled" : "enabled"}.`
+            );
+          }}
+        />
+        <HorizontalDivider className="opacity-25" />
+        <AutomationToggle
+          label="Focus cycle: Overtime"
+          description="Keep counting once your focus time is up, then choose to add the extra time to the session or dismiss it."
+          checked={overtimeEnabled}
+          onChange={(next) => {
+            setOvertimeEnabled(next);
+            showSettingsToast(
+              `Focus cycle: Overtime ${next ? "enabled" : "disabled"}.`
+            );
+          }}
+        />
+        <HorizontalDivider className="opacity-25" />
+        <AutomationToggle
+          label="Focus cycle: Edge border"
+          description="Pull the whole app back while a focus cycle is running, framing it with an edge around the screen."
+          checked={focusBorderEnabled}
+          onChange={(next) => {
+            setFocusBorderEnabled(next);
+            showSettingsToast(
+              `Focus cycle: Edge border ${next ? "enabled" : "disabled"}.`
             );
           }}
         />

@@ -2,11 +2,14 @@ import { useEffect } from "react";
 import { useAppStore } from "@/store/index";
 import { timerBridge } from "../services/timerBridge";
 import {
-  getNextMode,
   getDuration,
   startTimer,
   pauseTimer,
   endCycleTimer,
+  autoStartNext,
+  shouldAutoStart,
+  addOvertime,
+  dismissOvertime,
 } from "../services/timerControls";
 import { soundManager } from "@/lib/soundManager";
 import { notifyTimerComplete } from "@/lib/notifications";
@@ -14,7 +17,13 @@ import { notifyTimerComplete } from "@/lib/notifications";
 export function useTimerBridge() {
   useEffect(() => {
     const unsubTick = timerBridge.onTick(() => {
-      useAppStore.getState().tick();
+      const state = useAppStore.getState();
+      // The same worker ticks both phases; overtime counts up on its own field.
+      if (state.status === "overtime") {
+        state.overtimeTick();
+      } else {
+        state.tick();
+      }
     });
 
     const unsubComplete = timerBridge.onComplete(() => {
@@ -25,27 +34,23 @@ export function useTimerBridge() {
       soundManager.play(
         finishedMode === "focus" ? "focusComplete" : "breakComplete"
       );
-      notifyTimerComplete(finishedMode);
 
       const state = useAppStore.getState();
       const { settings } = state;
 
-      const shouldAutoStart =
-        finishedMode === "focus"
-          ? settings.autoStartBreak
-          : settings.autoStartFocus;
-
-      if (shouldAutoStart) {
-        const nextMode = getNextMode(
-          finishedMode,
-          state.focusCount,
-          settings.longBreakInterval
-        );
-        const duration = getDuration(nextMode, settings);
-        if (nextMode === "focus") soundManager.play("focusStart");
-        timerBridge.start("countdown", duration);
-        state.start(nextMode, duration, state.taskId);
+      /*
+        Focus overtime: the session is saved at its target duration, then the worker flips to counting up. The next cycle is held back until the user adds or dismisses the extra time.
+      */
+      if (finishedMode === "focus" && settings.overtimeEnabled) {
+        notifyTimerComplete(finishedMode, true);
+        state.beginOvertime();
+        timerBridge.start("countup", 0);
+        return;
       }
+
+      notifyTimerComplete(finishedMode);
+
+      if (shouldAutoStart(finishedMode)) autoStartNext(finishedMode);
     });
 
     return () => {
@@ -62,14 +67,19 @@ export function useTimer() {
     seconds:
       store.status === "idle"
         ? getDuration(store.mode, store.settings)
-        : Math.max(0, store.targetDuration - store.elapsed),
+        : store.status === "overtime"
+          ? store.overtimeElapsed
+          : Math.max(0, store.targetDuration - store.elapsed),
     status: store.status,
     mode: store.mode,
     elapsed: store.elapsed,
     targetDuration: store.targetDuration,
     focusCount: store.focusCount,
+    overtimeElapsed: store.overtimeElapsed,
     start: startTimer,
     pause: pauseTimer,
     endCycle: endCycleTimer,
+    addOvertime,
+    dismissOvertime,
   };
 }
