@@ -206,7 +206,7 @@ function PalettePanel() {
         // Only clicks on the backdrop itself dismiss
         if (e.target === e.currentTarget) close();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[6px]"
     >
       <motion.div
         role="dialog"
@@ -220,7 +220,7 @@ function PalettePanel() {
           // Clicking panel chrome must not drop keyboard control
           requestAnimationFrame(() => inputRef.current?.focus());
         }}
-        className="bg-brown-50 dark:bg-dark-600 border-brown-300 font-poppins w-full max-w-md overflow-clip rounded-2xl border shadow-2xl dark:border-black"
+        className="bg-brown-50 dark:bg-dark-600 border-brown-300 font-poppins w-full max-w-2xl overflow-clip rounded-xl border shadow-2xl dark:border-black"
       >
         {/* Search */}
         <div className="border-brown-200 dark:border-dark-900 relative border-b">
@@ -244,7 +244,7 @@ function PalettePanel() {
         <ul
           role="listbox"
           aria-label="Commands"
-          className="max-h-72 overflow-y-auto overscroll-contain p-2"
+          className="max-h-96 overflow-y-auto overscroll-contain p-2"
         >
           {results.length === 0 && (
             <li className="text-brown-900 dark:text-dark-100 px-3 py-6 text-center text-sm opacity-55">
