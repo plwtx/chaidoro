@@ -1,14 +1,14 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Search, X } from "lucide-react";
 import { useAppStore } from "@/store";
 import HorizontalDivider from "@/components/ui/horizontal-divider-line";
 import HeaderDescription from "@/components/ui/header-description";
+import KeyCaps from "@/components/ui/key-caps";
 import AutomationToggle from "../components/automation-toggle";
 import { showSettingsToast } from "../components/settings-toast";
 import {
   SHORTCUT_ACTIONS,
   comboFromEvent,
-  comboParts,
   comboText,
   shortcutCapture,
   type ShortcutActionDef,
@@ -16,25 +16,15 @@ import {
 } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 
-const CATEGORY_ORDER: ShortcutCategory[] = ["Timer", "Navigation", "Sounds"];
+const CATEGORY_ORDER: ShortcutCategory[] = [
+  "General",
+  "Timer",
+  "Navigation",
+  "Sounds",
+];
 
 function actionLabel(actionId: string): string {
   return SHORTCUT_ACTIONS.find((a) => a.id === actionId)?.label ?? actionId;
-}
-
-function KeyCaps({ combo }: { combo: string }) {
-  return (
-    <span className="flex items-center gap-1">
-      {comboParts(combo).map((part, i) => (
-        <Fragment key={`${part}-${i}`}>
-          {i > 0 && <span className="text-xs opacity-45">+</span>}
-          <kbd className="bg-brown-100 border-brown-300 shadow-brown-300 dark:bg-dark-900 font-fragment-mono rounded-md border px-2 py-0.5 text-xs shadow-[0_1.5px_0] dark:border-black dark:shadow-black">
-            {part}
-          </kbd>
-        </Fragment>
-      ))}
-    </span>
-  );
 }
 
 function ShortcutRow({

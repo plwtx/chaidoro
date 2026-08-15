@@ -1,4 +1,5 @@
 export type ShortcutActionId =
+  | "openPalette"
   | "timerToggle"
   | "timerEndCycle"
   | "navTimer"
@@ -6,18 +7,25 @@ export type ShortcutActionId =
   | "navSettings"
   | "toggleMute";
 
-export type ShortcutCategory = "Timer" | "Navigation" | "Sounds";
+export type ShortcutCategory = "General" | "Timer" | "Navigation" | "Sounds";
 
 export interface ShortcutActionDef {
   id: ShortcutActionId;
   label: string;
   description: string;
   category: ShortcutCategory;
-  /* Default combo string, or null for actions that ship unbound. */
+
   defaultCombo: string | null;
 }
 
 export const SHORTCUT_ACTIONS: ShortcutActionDef[] = [
+  {
+    id: "openPalette",
+    label: "Open command palette",
+    description: "Opens the searchable command palette.",
+    category: "General",
+    defaultCombo: "Ctrl+KeyK",
+  },
   {
     id: "timerToggle",
     label: "Start / pause timer",
@@ -67,8 +75,7 @@ export const DEFAULT_SHORTCUT_BINDINGS: Record<string, string | null> =
   Object.fromEntries(SHORTCUT_ACTIONS.map((a) => [a.id, a.defaultCombo]));
 
 /*
-  Shared flag set by the settings page while it is recording a new combo, so
-  the global dispatcher (useKeyboardShortcuts) ignores those keystrokes.
+  Shared flag set by the settings page while it is recording a new combo, so the global dispatcher (useKeyboardShortcuts) ignores those keystrokes.
 */
 export const shortcutCapture = { active: false };
 
@@ -87,8 +94,7 @@ const MODIFIER_CODES = new Set([
 ]);
 
 /*
- Serialize a keydown event into a combo string. Returns null while only
- modifiers are held (no main key yet) or when the code is unknown.
+ Serialize a keydown event into a combo string. Returns null while only modifiers are held (no main key yet) or when the code is unknown.
  */
 export function comboFromEvent(e: KeyboardEvent): string | null {
   if (!e.code || MODIFIER_CODES.has(e.code)) return null;
@@ -149,8 +155,7 @@ export function keyLabel(code: string): string {
 }
 
 /*
-  Split a stored combo string into display labels for keycap rendering,
-  e.g. "Ctrl+Shift+KeyK" -> ["Ctrl", "Shift", "K"].
+  Split a stored combo string into display labels for keycap rendering, e.g. "Ctrl+Shift+KeyK" -> ["Ctrl", "Shift", "K"].
  */
 export function comboParts(combo: string): string[] {
   return combo.split("+").map((part) => {
@@ -172,8 +177,7 @@ export function comboText(combo: string): string {
 }
 
 /**
-  True when the keydown happened in a text-entry context (inputs, textareas,
-  contenteditable) where shortcuts must not fire.
+  True when the keydown happened in a text-entry context (inputs, textareas, contenteditable) where shortcuts must not fire.
  */
 export function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;

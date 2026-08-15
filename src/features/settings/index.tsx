@@ -1,6 +1,10 @@
-import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import SettingsNav, { type SettingsCategory } from "./components/settings-nav";
+import {
+  SETTINGS_TABS,
+  useSettingsTabStore,
+  type SettingsTabId,
+} from "./settingsTabStore";
 import GeneralSettings from "./pages/settings-general";
 import ClockSettings from "./pages/settings-clock";
 import SoundSettings from "./pages/settings-sounds";
@@ -9,15 +13,7 @@ import ThemeSettings from "./pages/settings-theme";
 import StorageSettings from "./pages/settings-storage";
 import InformationSettings from "./pages/settings-information";
 
-const CATEGORIES: SettingsCategory[] = [
-  { id: "general", name: "General" },
-  { id: "clock", name: "Clock" },
-  { id: "sounds", name: "Sounds" },
-  { id: "shortcuts", name: "Shortcuts" },
-  { id: "theme", name: "Theme" },
-  { id: "storage", name: "Storage" },
-  { id: "information", name: "Information" },
-];
+const CATEGORIES: SettingsCategory[] = [...SETTINGS_TABS];
 
 const CATEGORY_COMPONENTS: Record<string, React.ComponentType> = {
   general: GeneralSettings,
@@ -30,7 +26,8 @@ const CATEGORY_COMPONENTS: Record<string, React.ComponentType> = {
 };
 
 export default function Settings() {
-  const [activeId, setActiveId] = useState("general");
+  const activeId = useSettingsTabStore((s) => s.activeId);
+  const setActiveId = useSettingsTabStore((s) => s.setActiveId);
   const ActivePanel = CATEGORY_COMPONENTS[activeId];
 
   return (
@@ -42,7 +39,7 @@ export default function Settings() {
             <SettingsNav
               categories={CATEGORIES}
               activeId={activeId}
-              onSelect={setActiveId}
+              onSelect={(id) => setActiveId(id as SettingsTabId)}
             />
             {/* Settings pages */}
             <main className="h-full w-full overflow-y-auto rounded-2xl">

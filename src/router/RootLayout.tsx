@@ -1,6 +1,7 @@
 import { Toaster } from "sonner";
 import Navbar from "@/features/navbar";
 import AnimatedRoutes from "@/features/router/AnimatedRoutes";
+import CommandPalette from "@/features/command-palette";
 import TimerIsland from "@/features/focus-timer/components/timer-island";
 import { useTimerBridge } from "@/features/focus-timer/hooks/useTimer";
 import { useThemeSync } from "@/features/settings/hooks/useThemeSync";
@@ -24,6 +25,8 @@ export default function RootLayout() {
         <Navbar />
       </div>
       <AnimatedRoutes />
+      {/* Ctrl+K command palette */}
+      <CommandPalette />
       {/* Notification toaster */}
       <Toaster position="bottom-center" />
     </div>
