@@ -4,7 +4,7 @@ import StageDetail from "./stage-detail";
 import { ROADMAP } from "./roadmap";
 
 const GITHUB_ISSUES_URL = "https://github.com/plwtx/chai.study/issues";
-const CONTACT_EMAIL = "dev@chai.study";
+const CONTACT_EMAIL = "dev@chaidoro.study";
 
 export default function DevelopmentSection() {
   return (

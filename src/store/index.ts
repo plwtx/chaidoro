@@ -12,6 +12,6 @@ export type AppStore = TimerSlice & TaskSlice & SessionSlice & SettingsSlice;
 export const useAppStore = create<AppStore>()((set, get) => ({
   ...createTimerSlice(set, get),
   ...createTaskSlice(set, get),
-  ...createSessionSlice(),
+  ...createSessionSlice(set, get),
   ...createSettingsSlice(set, get),
 }));

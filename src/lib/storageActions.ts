@@ -46,9 +46,22 @@ export async function exportJSON() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `chaidoro-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = backupFileName();
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/*
+  "Chaidoro 30.05.2026 14-35.json" - local date and time of the download.
+*/
+function backupFileName(date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const day = pad(date.getDate());
+  const month = pad(date.getMonth() + 1);
+  const year = date.getFullYear();
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  return `Chaidoro ${day}.${month}.${year} ${hours}-${minutes}.json`;
 }
 
 export async function importJSON(file: File): Promise<void> {

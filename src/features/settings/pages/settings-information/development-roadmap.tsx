@@ -44,19 +44,6 @@ export default function DevelopmentRoadmap() {
                 >
                   {stage.label}
                 </p>
-
-                {stage.date && (
-                  <p
-                    className={cn(
-                      "text-center text-xs whitespace-nowrap",
-                      nodeActive
-                        ? "text-brown-500 dark:text-brown-400"
-                        : "text-brown-400 dark:text-brown-500"
-                    )}
-                  >
-                    {stage.date}
-                  </p>
-                )}
               </div>
 
               {!isLast && (

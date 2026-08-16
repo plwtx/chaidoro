@@ -8,10 +8,9 @@ class TimerBridge {
 
   private ensureWorker(): Worker {
     if (!this.worker) {
-      this.worker = new Worker(
-        new URL("./timerWorker.ts", import.meta.url),
-        { type: "module" },
-      );
+      this.worker = new Worker(new URL("./timerWorker.ts", import.meta.url), {
+        type: "module",
+      });
       this.worker.onmessage = (e: MessageEvent) => {
         const msg = e.data;
         if (msg.type === "tick") {
@@ -41,6 +40,10 @@ class TimerBridge {
 
   reset() {
     this.worker?.postMessage({ type: "reset" });
+  }
+
+  hasWorker(): boolean {
+    return this.worker !== null;
   }
 
   setSpeed(speed: number) {

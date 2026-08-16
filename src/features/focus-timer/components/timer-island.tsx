@@ -17,8 +17,10 @@ export default function TimerIsland() {
   const elapsed = useAppStore((s) => s.elapsed);
   const targetDuration = useAppStore((s) => s.targetDuration);
   const mode = useAppStore((s) => s.mode);
+  const overtimeElapsed = useAppStore((s) => s.overtimeElapsed);
 
-  const isActive = status === "running" || status === "paused";
+  const isOvertime = status === "overtime";
+  const isActive = status === "running" || status === "paused" || isOvertime;
   const show = isActive && pathname !== "/";
   const remaining = Math.max(0, targetDuration - elapsed);
 
@@ -38,12 +40,18 @@ export default function TimerIsland() {
               "size-1.5 rounded-full",
               status === "running"
                 ? "animate-pulse bg-green-400"
-                : "bg-yellow-400"
+                : isOvertime
+                  ? "animate-pulse bg-amber-400"
+                  : "bg-yellow-400"
             )}
           />
-          <span className="font-mono text-xs text-zinc-400">{mode}</span>
+          <span className="font-mono text-xs text-zinc-400">
+            {isOvertime ? "overtime" : mode}
+          </span>
           <span className="font-mono text-xs font-medium text-white">
-            {formatTime(remaining)}
+            {isOvertime
+              ? `+${formatTime(overtimeElapsed)}`
+              : formatTime(remaining)}
           </span>
         </motion.button>
       )}

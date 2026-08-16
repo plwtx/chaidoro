@@ -32,6 +32,7 @@ export default function SettingsNav({
             <li
               key={category.id}
               onClick={() => onSelect(category.id)}
+              data-sound="navigation"
               className={cn(
                 "text-brown-800 dark:text-dark-100 flex items-center justify-between rounded-lg p-2 pl-5 transition-transform active:scale-90",
                 isActive

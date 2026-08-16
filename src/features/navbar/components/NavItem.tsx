@@ -45,6 +45,8 @@ export default function NavItem({
     <Icon
       className={cn(s.base, isActive ? s.active : s.inactive)}
       onClick={handleClick}
+      // Plays thock instead of the generic click sound
+      data-sound="navigation"
     />
   );
 }
