@@ -3,6 +3,8 @@ import { timerBridge } from "./timerBridge";
 import { soundManager } from "@/lib/soundManager";
 import type { TimerMode } from "@/types";
 
+const MIN_RECORDED_FOCUS_SECONDS = 300;
+
 export function getNextMode(
   currentMode: TimerMode,
   focusCount: number,
@@ -60,7 +62,27 @@ export async function resolveOvertime(add: boolean) {
   timerBridge.reset();
   await state.resolveOvertime(add);
 
-  if (shouldAutoStart("focus")) autoStartNext("focus");
+  if (shouldAutoStart("focus")) {
+    autoStartNext("focus");
+    return;
+  }
+
+  // Land on the break itself, ready to start, rather than sitting on a finished focus cycle.
+  queueNextCycle("focus");
+}
+
+/*
+  Leaves the timer idle on the cycle that follows `finishedMode`, so the clock already shows the next duration and the button just starts it.
+*/
+function queueNextCycle(finishedMode: TimerMode) {
+  const state = useAppStore.getState();
+  const nextMode = getNextMode(
+    finishedMode,
+    state.focusCount,
+    state.settings.longBreakInterval
+  );
+  state.reset();
+  useAppStore.setState({ mode: nextMode });
 }
 
 export function addOvertime() {
@@ -78,7 +100,15 @@ export function startTimer() {
   if (state.status === "overtime") return;
 
   if (state.status === "paused") {
-    timerBridge.resume();
+    // A cycle restored from a draft has no worker behind it yet, so it starts a fresh countdown from whatever time is left.
+    if (timerBridge.hasWorker()) {
+      timerBridge.resume();
+    } else {
+      timerBridge.start(
+        "countdown",
+        Math.max(0, state.targetDuration - state.elapsed)
+      );
+    }
     useAppStore.getState().resume();
     return;
   }
@@ -119,7 +149,17 @@ export function endCycleTimer() {
   const currentMode = state.mode;
 
   if (state.status !== "finished" && state.elapsed > 0) {
-    state.finish();
+    /*
+      A focus cycle cut this short is not worth logging: it is thrown away instead of landing in the stats as a stub session. Breaks are recorded however short they were, since a 5 minute break could never clear this bar.
+    */
+    const tooShortToLog =
+      currentMode === "focus" && state.elapsed < MIN_RECORDED_FOCUS_SECONDS;
+
+    if (tooShortToLog) {
+      state.discard();
+    } else {
+      state.finish();
+    }
   }
 
   timerBridge.reset();

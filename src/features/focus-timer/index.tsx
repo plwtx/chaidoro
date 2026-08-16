@@ -106,24 +106,8 @@ export default function FocusTimer() {
             ))}
           </div>
 
-          {/* Overtime counts up,  "+" in front of overtime */}
-          <div className="flex items-center">
-            <AnimatePresence>
-              {status === "overtime" && (
-                <motion.span
-                  key="overtime-sign"
-                  className="font-poppins text-brown-800 text-9xl font-extrabold antialiased select-none dark:text-black"
-                  initial={{ opacity: 0, x: 16, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, x: 16, filter: "blur(6px)" }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                >
-                  +
-                </motion.span>
-              )}
-            </AnimatePresence>
-            <Clock seconds={seconds} />
-          </div>
+          {/* In overtime this keeps counting past the target, so it reads as the whole session */}
+          <Clock seconds={seconds} />
 
           {/* Controls */}
           <div className="relative z-40 flex items-center justify-center">
@@ -211,7 +195,7 @@ export default function FocusTimer() {
                     whileHover={{ scale: 1.06 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    dismiss
+                    dismiss - {formatClock(overtimeElapsed)}
                   </motion.button>
                 </motion.div>
               ) : status === "idle" || status === "finished" ? (

@@ -22,6 +22,7 @@ const { mockBridge, fireTick, fireComplete } = vi.hoisted(() => {
       _completeCb = cb;
       return () => {};
     }),
+    hasWorker: vi.fn(() => true),
     destroy: vi.fn(),
   };
 
@@ -100,12 +101,13 @@ function renderTimer() {
   });
 }
 
-// ─── Tests ───────────────────────────────────────────────────────────────────
+// Tests
 
 describe("useTimer - start → pause (9:31 left) → resume → finish × 3", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-14T10:00:00.000Z"));
+    mockBridge.hasWorker.mockReturnValue(true);
     useAppStore.setState({
       ...INITIAL_STATE,
       settings: { ...DEFAULT_SETTINGS, overtimeEnabled: false },
@@ -143,7 +145,7 @@ describe("useTimer - start → pause (9:31 left) → resume → finish × 3", ()
       useAppStore.setState({ mode: "focus" });
     });
 
-    // ── Start ───────────────────────────────────────────────────────────────
+    //  Start
     act(() => {
       result.current.start();
     });
@@ -151,7 +153,7 @@ describe("useTimer - start → pause (9:31 left) → resume → finish × 3", ()
     expect(mockBridge.start).toHaveBeenCalledWith("countdown", FOCUS_SEC);
     expect(mockDb.sessionDraft.put).toHaveBeenCalledOnce();
 
-    // ── Tick 929 times (elapsed 0 → 929, seconds display 1500 → 571) ────
+    //  Tick 929 times (elapsed 0 → 929, seconds display 1500 → 571)
     act(() => {
       simulateTicks(929);
     });
@@ -165,7 +167,7 @@ describe("useTimer - start → pause (9:31 left) → resume → finish × 3", ()
     expect(mockBridge.pause).toHaveBeenCalledOnce();
     expect(mockDb.sessionDraft.update).toHaveBeenCalled();
 
-    // ── 30 s elapse while paused (wall clock advances, no ticks) ────────
+    // 30 s elapse while paused (wall clock advances, no ticks)
     act(() => {
       vi.advanceTimersByTime(30_000);
     });
@@ -244,6 +246,7 @@ describe("useTimer - focus overtime", () => {
       settings: { ...DEFAULT_SETTINGS, overtimeEnabled: true },
     });
     vi.clearAllMocks();
+    mockBridge.hasWorker.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -276,7 +279,8 @@ describe("useTimer - focus overtime", () => {
       simulateTicks(OVERTIME_SEC);
     });
     expect(result.current.overtimeElapsed).toBe(OVERTIME_SEC);
-    expect(result.current.seconds).toBe(OVERTIME_SEC);
+    // The clock reads the whole session (28:32), not the extra time on its own.
+    expect(result.current.seconds).toBe(FOCUS_SEC + OVERTIME_SEC);
   }
 
   it("adds the extra time to the saved session", async () => {
@@ -292,7 +296,10 @@ describe("useTimer - focus overtime", () => {
     expect(mockDb.sessions.update).toHaveBeenCalledWith(sessionId, {
       actualDuration: FOCUS_SEC + OVERTIME_SEC,
     });
-    expect(result.current.status).toBe("finished");
+    // Resolving leaves you on the break, ready to start.
+    expect(result.current.status).toBe("idle");
+    expect(result.current.mode).toBe("break");
+    expect(result.current.seconds).toBe(DEFAULT_SETTINGS.shortBreakDuration);
     expect(result.current.overtimeElapsed).toBe(0);
     expect(mockBridge.reset).toHaveBeenCalledOnce();
   });
@@ -306,7 +313,8 @@ describe("useTimer - focus overtime", () => {
     });
 
     expect(mockDb.sessions.update).not.toHaveBeenCalled();
-    expect(result.current.status).toBe("finished");
+    expect(result.current.status).toBe("idle");
+    expect(result.current.mode).toBe("break");
     expect(result.current.overtimeElapsed).toBe(0);
   });
 
@@ -401,5 +409,181 @@ describe("useTimer - focus overtime", () => {
     );
     expect(result.current.status).toBe("running");
     expect(result.current.mode).toBe("break");
+  });
+});
+
+/**
+ * Reload mid-focus: the cycle comes back paused at its last checkpoint with
+ * resume / end cycle, and resuming picks up from the time that was left.
+ */
+describe("useTimer - resuming a focus cycle after a reload", () => {
+  const RAN_FOR = 612; // 10:12 in, checkpointed at 610
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-14T10:00:00.000Z"));
+    useAppStore.setState({
+      ...INITIAL_STATE,
+      settings: { ...DEFAULT_SETTINGS, overtimeEnabled: true },
+    });
+    vi.clearAllMocks();
+    mockBridge.hasWorker.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("restores the remaining time paused, then counts down from it", async () => {
+    const { result } = renderTimer();
+
+    act(() => {
+      result.current.start();
+    });
+    const draft = mockDb.sessionDraft.put.mock.lastCall[0];
+
+    act(() => {
+      simulateTicks(RAN_FOR);
+    });
+    // Checkpointed every 5 s while running.
+    expect(mockDb.sessionDraft.update).toHaveBeenLastCalledWith(
+      "current",
+      expect.objectContaining({ elapsedAtCheckpoint: 610 })
+    );
+
+    // ── Reload: fresh store and no worker behind the timer ────────────────
+    useAppStore.setState({
+      ...INITIAL_STATE,
+      settings: { ...DEFAULT_SETTINGS, overtimeEnabled: true },
+    });
+    vi.clearAllMocks();
+    mockBridge.hasWorker.mockReturnValue(false);
+    mockDb.sessionDraft.get.mockResolvedValue({
+      ...draft,
+      elapsedAtCheckpoint: 610,
+    });
+
+    await act(async () => {
+      await useAppStore.getState().recoverDraft();
+    });
+
+    expect(result.current.status).toBe("paused");
+    expect(result.current.mode).toBe("focus");
+    expect(result.current.seconds).toBe(FOCUS_SEC - 610);
+    expect(mockBridge.start).not.toHaveBeenCalled();
+
+    // ── Resume: no worker to resume, so a fresh countdown from what is left ─
+    act(() => {
+      result.current.start();
+    });
+    expect(mockBridge.start).toHaveBeenCalledWith("countdown", FOCUS_SEC - 610);
+    expect(mockBridge.resume).not.toHaveBeenCalled();
+    expect(result.current.status).toBe("running");
+  });
+
+  it("drops a half-run break instead of restoring it", async () => {
+    mockDb.sessionDraft.get.mockResolvedValue({
+      id: "current",
+      startedAt: Date.now(),
+      mode: "break",
+      targetDuration: DEFAULT_SETTINGS.shortBreakDuration,
+      taskId: null,
+      pomodoroSetId: null,
+      lastCheckpointAt: Date.now(),
+      elapsedAtCheckpoint: 100,
+    });
+
+    await act(async () => {
+      await useAppStore.getState().recoverDraft();
+    });
+
+    expect(useAppStore.getState().status).toBe("idle");
+    expect(mockDb.sessionDraft.delete).toHaveBeenCalledWith("current");
+  });
+});
+
+/**
+ * "End cycle" only logs a focus session once it is worth logging: under
+ * 10 minutes the cycle is thrown away rather than landing in the stats.
+ */
+describe("useTimer - ending a cycle early", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-14T10:00:00.000Z"));
+    useAppStore.setState({
+      ...INITIAL_STATE,
+      settings: { ...DEFAULT_SETTINGS, overtimeEnabled: true },
+    });
+    vi.clearAllMocks();
+    mockBridge.hasWorker.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("throws away a focus cycle ended before 10 minutes", () => {
+    const { result } = renderTimer();
+
+    act(() => {
+      result.current.start();
+    });
+    act(() => {
+      simulateTicks(599);
+    });
+    act(() => {
+      result.current.endCycle();
+    });
+
+    expect(mockDb.sessions.add).not.toHaveBeenCalled();
+    expect(mockDb.sessionDraft.delete).toHaveBeenCalledWith("current");
+    // No stub session, no phase dot, but still moved on to the break.
+    expect(useAppStore.getState().focusCount).toBe(0);
+    expect(result.current.status).toBe("idle");
+    expect(result.current.mode).toBe("break");
+  });
+
+  it("records a focus cycle ended at 10 minutes", () => {
+    const { result } = renderTimer();
+
+    act(() => {
+      result.current.start();
+    });
+    act(() => {
+      simulateTicks(600);
+    });
+    act(() => {
+      result.current.endCycle();
+    });
+
+    expect(mockDb.sessions.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "focus",
+        actualDuration: 600,
+        interrupted: true,
+      })
+    );
+    expect(useAppStore.getState().focusCount).toBe(1);
+  });
+
+  it("still records a break ended early", () => {
+    const { result } = renderTimer();
+
+    act(() => {
+      useAppStore.setState({ mode: "break" });
+    });
+    act(() => {
+      result.current.start();
+    });
+    act(() => {
+      simulateTicks(100);
+    });
+    act(() => {
+      result.current.endCycle();
+    });
+
+    expect(mockDb.sessions.add).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: "break", actualDuration: 100 })
+    );
   });
 });

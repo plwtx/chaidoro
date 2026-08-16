@@ -68,7 +68,8 @@ export function useTimer() {
       store.status === "idle"
         ? getDuration(store.mode, store.settings)
         : store.status === "overtime"
-          ? store.overtimeElapsed
+          ? // Overtime shows the whole session on the clock (25:00 -> 28:32); the extra time on its own lives on the buttons.
+            store.elapsed + store.overtimeElapsed
           : Math.max(0, store.targetDuration - store.elapsed),
     status: store.status,
     mode: store.mode,

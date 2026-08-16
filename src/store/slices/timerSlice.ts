@@ -1,7 +1,8 @@
 import type { TimerStatus, TimerMode, SessionDraft } from "@/types";
 import { db } from "@/db";
 
-const OVERTIME_CHECKPOINT_SECONDS = 5;
+/* How often a running cycle is checkpointed to the draft, in seconds. A hard reload loses at most this much of it. */
+const CHECKPOINT_SECONDS = 5;
 
 export interface TimerSliceState {
   status: TimerStatus;
@@ -26,8 +27,10 @@ export interface TimerSliceActions {
   resume: () => void;
   tick: () => void;
   finish: () => void;
+  discard: () => void;
   reset: () => void;
   setHasDraftToRecover: (has: boolean) => void;
+  restoreCycle: (draft: SessionDraft) => void;
   beginOvertime: () => void;
   overtimeTick: () => void;
   resolveOvertime: (add: boolean) => Promise<void>;
@@ -91,7 +94,7 @@ export const createTimerSlice = (set, get): TimerSlice => ({
   tick: () => {
     const next = get().elapsed + 1;
     set({ elapsed: next });
-    if (next % 60 === 0) {
+    if (next % CHECKPOINT_SECONDS === 0) {
       db.sessionDraft.update("current", {
         lastCheckpointAt: Date.now(),
         elapsedAtCheckpoint: next,
@@ -128,6 +131,14 @@ export const createTimerSlice = (set, get): TimerSlice => ({
     });
   },
 
+  /*
+    Ends a cycle without recording it: the draft is cleared, but no session row is written and the phase dots do not advance. Used for focus cycles cut short of the minimum worth logging.
+  */
+  discard: () => {
+    db.sessionDraft.delete("current");
+    set({ status: "finished" });
+  },
+
   reset: () => {
     set({
       status: "idle",
@@ -140,6 +151,21 @@ export const createTimerSlice = (set, get): TimerSlice => ({
   },
 
   setHasDraftToRecover: (has) => set({ hasDraftToRecover: has }),
+
+  /*
+    Puts a reloaded focus cycle back on screen paused at its last checkpoint, so the user picks up at the remaining time with resume / end cycle. Time spent away from the app is not counted, same as for overtime.
+  */
+  restoreCycle: (draft) => {
+    set({
+      status: "paused",
+      mode: draft.mode,
+      elapsed: draft.elapsedAtCheckpoint,
+      targetDuration: draft.targetDuration,
+      taskId: draft.taskId,
+      pomodoroSetId: draft.pomodoroSetId,
+      overtimeElapsed: 0,
+    });
+  },
 
   beginOvertime: () => {
     const { elapsed, targetDuration, taskId, pomodoroSetId, lastSessionId } =
@@ -166,7 +192,7 @@ export const createTimerSlice = (set, get): TimerSlice => ({
   overtimeTick: () => {
     const next = get().overtimeElapsed + 1;
     set({ overtimeElapsed: next });
-    if (next % OVERTIME_CHECKPOINT_SECONDS === 0) {
+    if (next % CHECKPOINT_SECONDS === 0) {
       db.sessionDraft.update("current", {
         overtimeElapsed: next,
         lastCheckpointAt: Date.now(),
