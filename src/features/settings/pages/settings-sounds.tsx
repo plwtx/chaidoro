@@ -20,11 +20,13 @@ function VolumeSlider({
   disabled,
   onChange,
   onRelease,
+  ariaLabel = "Sound volume",
 }: {
   value: number;
   disabled: boolean;
   onChange: (v: number) => void;
   onRelease: () => void;
+  ariaLabel?: string;
 }) {
   return (
     <div
@@ -50,11 +52,47 @@ function VolumeSlider({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         onPointerUp={onRelease}
-        aria-label="Sound volume"
+        aria-label={ariaLabel}
         // The slider itself should not trigger the global click sound
         data-sound="none"
         className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
       />
+    </div>
+  );
+}
+
+function MasterVolumeRow() {
+  const masterEnabled = useAppStore((s) => s.settings.sounds.enabled);
+  const masterVolume = useAppStore(
+    (s) => s.settings.sounds.masterVolume ?? 100
+  );
+  const setSoundsMasterVolume = useAppStore((s) => s.setSoundsMasterVolume);
+
+  return (
+    <div
+      className={cn(
+        "text-brown-900 dark:text-dark-100 flex w-full items-center justify-between gap-6",
+        !masterEnabled && "pointer-events-none opacity-40"
+      )}
+    >
+      <div className="text-base">
+        <h3 className="font-semibold">Master volume</h3>
+        <p className="text-sm opacity-75">
+          Scales every sound effect on top of its individual volume below.
+        </p>
+      </div>
+      <div className="flex items-center gap-4">
+        <span className="font-fragment-mono w-10 text-right text-xs opacity-75">
+          {masterVolume}%
+        </span>
+        <VolumeSlider
+          value={masterVolume}
+          disabled={!masterEnabled}
+          onChange={(v) => setSoundsMasterVolume(v)}
+          onRelease={() => soundManager.play("click", { force: true })}
+          ariaLabel="Master sound volume"
+        />
+      </div>
     </div>
   );
 }
@@ -160,6 +198,7 @@ export default function SoundSettings() {
             );
           }}
         />
+        <MasterVolumeRow />
         <HorizontalDivider />
         {/* One row per event defined in src/assets/audio/sounds.json */}
         {(Object.keys(SOUND_EVENTS) as SoundEventId[]).map((id) => (

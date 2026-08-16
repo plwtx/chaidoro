@@ -21,6 +21,7 @@ export interface SoundEventSetting {
 
 export interface SoundSettings {
   enabled: boolean;
+  masterVolume: number;
   events: Record<string, SoundEventSetting>;
 }
 

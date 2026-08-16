@@ -81,7 +81,9 @@ class SoundManager {
     if (!this.supported) return;
     const { sounds } = useAppStore.getState().settings;
     const event = sounds.events[id];
-    const volume = (opts.volume ?? event?.volume ?? 70) / 100;
+
+    const master = (sounds.masterVolume ?? 100) / 100;
+    const volume = ((opts.volume ?? event?.volume ?? 70) / 100) * master;
 
     if (!opts.force) {
       if (!sounds.enabled) return;

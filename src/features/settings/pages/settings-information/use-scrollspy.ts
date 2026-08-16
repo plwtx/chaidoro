@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 
 interface UseScrollspyOptions {
   sectionIds: string[];
-  rootMargin?: string;
+
+  activationRatio?: number;
 }
 
 export function useScrollspy({
   sectionIds,
-  rootMargin = "0px 0px -65% 0px",
+  activationRatio = 0.3,
 }: UseScrollspyOptions): string {
   const [activeId, setActiveId] = useState<string>(sectionIds[0] ?? "");
 
@@ -20,27 +21,51 @@ export function useScrollspy({
 
     if (elements.length === 0) return;
 
-    const root = findScrollableAncestor(elements[0]);
+    const container = findScrollableAncestor(elements[0]);
+    const scrollTarget: HTMLElement | Window = container ?? window;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting);
-        if (visible.length === 0) return;
-        const topMost = visible.reduce((acc, curr) =>
-          curr.boundingClientRect.top < acc.boundingClientRect.top ? curr : acc
-        );
-        setActiveId(topMost.target.id);
-      },
-      {
-        root,
-        rootMargin,
-        threshold: 0,
+    let frame = 0;
+
+    const computeActive = () => {
+      frame = 0;
+
+      const viewportTop = container ? container.getBoundingClientRect().top : 0;
+      const viewportHeight = container
+        ? container.clientHeight
+        : window.innerHeight;
+      const line = viewportTop + viewportHeight * activationRatio;
+
+      const scrollTop = container ? container.scrollTop : window.scrollY;
+      const maxScroll = container
+        ? container.scrollHeight - container.clientHeight
+        : document.documentElement.scrollHeight - window.innerHeight;
+      if (maxScroll > 0 && maxScroll - scrollTop <= 4) {
+        setActiveId(elements[elements.length - 1].id);
+        return;
       }
-    );
 
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [sectionIds, rootMargin]);
+      let current = elements[0].id;
+      for (const el of elements) {
+        if (el.getBoundingClientRect().top <= line) current = el.id;
+        else break;
+      }
+      setActiveId(current);
+    };
+
+    const schedule = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(computeActive);
+    };
+
+    computeActive();
+    scrollTarget.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      scrollTarget.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [sectionIds, activationRatio]);
 
   return activeId;
 }

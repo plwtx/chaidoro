@@ -42,21 +42,28 @@ export default function Settings() {
               onSelect={(id) => setActiveId(id as SettingsTabId)}
             />
             {/* Settings pages */}
-            <main className="h-full w-full overflow-y-auto rounded-2xl">
-              <div className="min-h-full p-6 pt-9 pb-6">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeId}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 12 }}
-                    transition={{ duration: 0.15, ease: "easeInOut" }}
-                  >
-                    <ActivePanel />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </main>
+            <div className="relative h-full w-full min-w-0">
+              <main className="h-full w-full overflow-y-auto rounded-2xl">
+                <div className="min-h-full p-6 pt-9 pb-24">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeId}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 12 }}
+                      transition={{ duration: 0.15, ease: "easeInOut" }}
+                    >
+                      <ActivePanel />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </main>
+              {/* Bottom edge fade: blurs and fades scrolled content into the page background so it doesn't cut off hard */}
+              <div
+                aria-hidden="true"
+                className="from-brown-50 dark:from-dark-600 pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-2xl bg-linear-to-t to-transparent mask-[linear-gradient(to_bottom,transparent,black_80%)] backdrop-blur-[3px]"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ function buildDefaultSoundSettings(): SoundSettings {
   for (const [id, def] of Object.entries(soundManifest.events)) {
     events[id] = { enabled: true, volume: def.defaultVolume ?? 70 };
   }
-  return { enabled: true, events };
+  return { enabled: true, masterVolume: 100, events };
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -70,6 +70,7 @@ export interface SettingsSliceActions {
   setOvertimeEnabled: (enabled: boolean) => Promise<void>;
   setFocusBorderEnabled: (enabled: boolean) => Promise<void>;
   setSoundsEnabled: (enabled: boolean) => Promise<void>;
+  setSoundsMasterVolume: (volume: number) => Promise<void>;
   setSoundEvent: (
     id: string,
     patch: Partial<SoundEventSetting>
@@ -183,6 +184,11 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
   setSoundsEnabled: async (enabled) => {
     const { sounds } = get().settings;
     await get().updateSettings({ sounds: { ...sounds, enabled } });
+  },
+
+  setSoundsMasterVolume: async (volume) => {
+    const { sounds } = get().settings;
+    await get().updateSettings({ sounds: { ...sounds, masterVolume: volume } });
   },
 
   setSoundEvent: async (id, patch) => {
