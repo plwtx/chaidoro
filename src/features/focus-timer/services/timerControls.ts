@@ -50,7 +50,7 @@ export function autoStartNext(finishedMode: TimerMode) {
     settings.longBreakInterval
   );
   const duration = getDuration(nextMode, settings);
-  if (nextMode === "focus") soundManager.play("focusStart");
+  soundManager.play("focusStart");
   timerBridge.start("countdown", duration);
   state.start(nextMode, duration, state.taskId);
 }
@@ -125,7 +125,7 @@ export function startTimer() {
   }
 
   const duration = getDuration(mode, state.settings);
-  if (mode === "focus") soundManager.play("focusStart");
+  soundManager.play("focusStart");
   timerBridge.start("countdown", duration);
   state.start(mode, duration, state.activeTaskId);
 }
@@ -148,10 +148,13 @@ export function endCycleTimer() {
 
   const currentMode = state.mode;
 
+  if (state.status !== "finished") {
+    soundManager.play(
+      currentMode === "focus" ? "focusComplete" : "breakComplete"
+    );
+  }
+
   if (state.status !== "finished" && state.elapsed > 0) {
-    /*
-      A focus cycle cut this short is not worth logging: it is thrown away instead of landing in the stats as a stub session. Breaks are recorded however short they were, since a 5 minute break could never clear this bar.
-    */
     const tooShortToLog =
       currentMode === "focus" && state.elapsed < MIN_RECORDED_FOCUS_SECONDS;
 

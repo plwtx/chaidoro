@@ -504,7 +504,7 @@ describe("useTimer - resuming a focus cycle after a reload", () => {
 
 /**
  * "End cycle" only logs a focus session once it is worth logging: under
- * 10 minutes the cycle is thrown away rather than landing in the stats.
+ * 5 minutes the cycle is thrown away rather than landing in the stats.
  */
 describe("useTimer - ending a cycle early", () => {
   beforeEach(() => {
@@ -522,14 +522,14 @@ describe("useTimer - ending a cycle early", () => {
     vi.useRealTimers();
   });
 
-  it("throws away a focus cycle ended before 10 minutes", () => {
+  it("throws away a focus cycle ended before 5 minutes", () => {
     const { result } = renderTimer();
 
     act(() => {
       result.current.start();
     });
     act(() => {
-      simulateTicks(599);
+      simulateTicks(299);
     });
     act(() => {
       result.current.endCycle();
@@ -543,14 +543,14 @@ describe("useTimer - ending a cycle early", () => {
     expect(result.current.mode).toBe("break");
   });
 
-  it("records a focus cycle ended at 10 minutes", () => {
+  it("records a focus cycle ended at 5 minutes", () => {
     const { result } = renderTimer();
 
     act(() => {
       result.current.start();
     });
     act(() => {
-      simulateTicks(600);
+      simulateTicks(300);
     });
     act(() => {
       result.current.endCycle();
@@ -559,7 +559,7 @@ describe("useTimer - ending a cycle early", () => {
     expect(mockDb.sessions.add).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: "focus",
-        actualDuration: 600,
+        actualDuration: 300,
         interrupted: true,
       })
     );
