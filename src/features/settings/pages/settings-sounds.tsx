@@ -7,6 +7,7 @@ import { showSettingsToast } from "../components/settings-toast";
 import {
   soundManager,
   SOUND_EVENTS,
+  DEFAULT_MASTER_VOLUME,
   type SoundEventId,
 } from "@/lib/soundManager";
 import {
@@ -64,7 +65,7 @@ function VolumeSlider({
 function MasterVolumeRow() {
   const masterEnabled = useAppStore((s) => s.settings.sounds.enabled);
   const masterVolume = useAppStore(
-    (s) => s.settings.sounds.masterVolume ?? 100
+    (s) => s.settings.sounds.masterVolume ?? DEFAULT_MASTER_VOLUME
   );
   const setSoundsMasterVolume = useAppStore((s) => s.setSoundsMasterVolume);
 

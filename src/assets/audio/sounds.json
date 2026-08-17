@@ -1,35 +1,38 @@
 {
-  "_readme": "Maps app sound events to audio files in this folder. To use your own sound: drop the audio file into src/assets/audio/ and change the 'file' value of an event below. 'label' and 'description' are shown in Settings > Sounds. 'defaultVolume' (0-100) is only the initial value for new users; the live value is stored in user settings. See README.md in this folder.",
+  "_readme": "Maps app sound events to audio files in this folder. To use your own sound: drop the audio file into src/assets/audio/ and change the 'file' value of an event below. 'label' and 'description' are shown in Settings > Sounds. 'defaultVolume' (0-100) is only the initial value for new users; the live value is stored in user settings. 'master.defaultVolume' does the same for the master volume that scales every event. See README.md in this folder.",
+  "master": {
+    "defaultVolume": 75
+  },
   "events": {
     "click": {
-      "file": "click.wav",
+      "file": "click.opus",
       "label": "Mouse click",
       "description": "Plays on every mouse click across the app.",
-      "defaultVolume": 40
+      "defaultVolume": 30
     },
     "navigation": {
-      "file": "thock.wav",
+      "file": "thock.opus",
       "label": "Navigation",
       "description": "Plays when switching tabs (clock, statistics, settings).",
       "defaultVolume": 60
     },
     "focusStart": {
-      "file": "focus-start.mp3",
+      "file": "focus-start.opus",
       "label": "Focus start",
       "description": "Plays when a focus session starts.",
-      "defaultVolume": 80
+      "defaultVolume": 60
     },
     "focusComplete": {
-      "file": "focus-complete.mp3",
+      "file": "focus-complete.opus",
       "label": "Focus complete",
       "description": "Plays when a focus session is completed.",
-      "defaultVolume": 80
+      "defaultVolume": 60
     },
     "breakComplete": {
-      "file": "break-complete.mp3",
+      "file": "break-complete.opus",
       "label": "Break complete",
       "description": "Plays when a break is over.",
-      "defaultVolume": 80
+      "defaultVolume": 60
     }
   }
 }

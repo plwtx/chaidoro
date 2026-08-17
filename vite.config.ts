@@ -23,7 +23,9 @@ export default defineConfig({
 
       manifest: false,
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,json,woff2,wav,mp3,ogg}"],
+        globPatterns: [
+          "**/*.{js,css,html,ico,png,svg,json,woff2,opus,wav,mp3,ogg}",
+        ],
         navigateFallback: "/index.html",
         cleanupOutdatedCaches: true,
 

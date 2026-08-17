@@ -7,9 +7,12 @@ export type SoundEventId = keyof typeof soundManifest.events;
 
 export const SOUND_EVENTS = soundManifest.events;
 
+// Initial master volume for new users; the live value lives in settings.
+export const DEFAULT_MASTER_VOLUME = soundManifest.master.defaultVolume;
+
 // Resolve every audio file in the assets folder to its bundled URL so the
 // manifest can reference files by plain filename.
-const audioUrls = import.meta.glob("@/assets/audio/*.{wav,mp3,ogg}", {
+const audioUrls = import.meta.glob("@/assets/audio/*.{opus,wav,mp3,ogg}", {
   eager: true,
   query: "?url",
   import: "default",
@@ -82,7 +85,7 @@ class SoundManager {
     const { sounds } = useAppStore.getState().settings;
     const event = sounds.events[id];
 
-    const master = (sounds.masterVolume ?? 100) / 100;
+    const master = (sounds.masterVolume ?? DEFAULT_MASTER_VOLUME) / 100;
     const volume = ((opts.volume ?? event?.volume ?? 70) / 100) * master;
 
     if (!opts.force) {

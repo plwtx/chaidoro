@@ -16,7 +16,11 @@ function buildDefaultSoundSettings(): SoundSettings {
   for (const [id, def] of Object.entries(soundManifest.events)) {
     events[id] = { enabled: true, volume: def.defaultVolume ?? 70 };
   }
-  return { enabled: true, masterVolume: 100, events };
+  return {
+    enabled: true,
+    masterVolume: soundManifest.master.defaultVolume,
+    events,
+  };
 }
 
 export const DEFAULT_SETTINGS: Settings = {
