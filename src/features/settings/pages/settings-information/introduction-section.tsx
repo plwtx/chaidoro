@@ -12,7 +12,7 @@ export default function IntroductionSection() {
           </p>
         </div>
         <a
-          href="https://github.com/plwtx/chai.study"
+          href="https://github.com/plwtx/chaidoro"
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -12,6 +12,7 @@ import ShortcutSettings from "./pages/settings-shortcuts";
 import ThemeSettings from "./pages/settings-theme";
 import StorageSettings from "./pages/settings-storage";
 import InformationSettings from "./pages/settings-information";
+import ChangelogSettings from "./pages/settings-changelog";
 
 const CATEGORIES: SettingsCategory[] = [...SETTINGS_TABS];
 
@@ -23,6 +24,7 @@ const CATEGORY_COMPONENTS: Record<string, React.ComponentType> = {
   theme: ThemeSettings,
   storage: StorageSettings,
   information: InformationSettings,
+  changelog: ChangelogSettings,
 };
 
 export default function Settings() {

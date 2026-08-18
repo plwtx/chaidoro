@@ -7,7 +7,8 @@ export const SETTINGS_TABS = [
   { id: "shortcuts", name: "Shortcuts" },
   { id: "theme", name: "Theme" },
   { id: "storage", name: "Storage" },
-  { id: "information", name: "Information" },
+  { id: "information", name: "Information", group: "bottom" },
+  { id: "changelog", name: "Changelog", group: "bottom" },
 ] as const;
 
 export type SettingsTabId = (typeof SETTINGS_TABS)[number]["id"];
