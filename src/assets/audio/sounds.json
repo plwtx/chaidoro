@@ -8,31 +8,31 @@
       "file": "click.opus",
       "label": "Mouse click",
       "description": "Plays on every mouse click across the app.",
-      "defaultVolume": 30
+      "defaultVolume": 0
     },
     "navigation": {
       "file": "thock.opus",
       "label": "Navigation",
       "description": "Plays when switching tabs (clock, statistics, settings).",
-      "defaultVolume": 60
+      "defaultVolume": 40
     },
     "focusStart": {
       "file": "focus-start.opus",
       "label": "Focus start",
       "description": "Plays when a focus session starts.",
-      "defaultVolume": 60
+      "defaultVolume": 40
     },
     "focusComplete": {
       "file": "focus-complete.opus",
       "label": "Focus complete",
       "description": "Plays when a focus session is completed.",
-      "defaultVolume": 60
+      "defaultVolume": 50
     },
     "breakComplete": {
       "file": "break-complete.opus",
       "label": "Break complete",
       "description": "Plays when a break is over.",
-      "defaultVolume": 60
+      "defaultVolume": 50
     }
   }
 }

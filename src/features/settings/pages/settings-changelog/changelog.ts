@@ -70,7 +70,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "v1.0.0",
     date: "2026-05-16",
     description: [
-      "Collecting feedbacks, catching bugs. Fix and test untill most of the discoverable bugs are caught.",
+      "Working version of Chaidoro (at least on my device :D). I will collect feedbacks, catch bugs, fix and test untill most of the discoverable bugs are caught.",
     ],
     current: false,
   },
