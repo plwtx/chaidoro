@@ -68,7 +68,7 @@ export default function MatrixClock({ seconds }: MatrixClockProps) {
   const digits = formatDigits(seconds);
 
   return (
-    <div className="font-fragment-mono text-brown-800 dark:text-dark-100 flex items-center text-9xl font-extrabold antialiased">
+    <div className="font-fragment-mono text-brown-800 dark:text-dark-100 accent:text-accent flex items-center text-9xl font-extrabold antialiased">
       {digits.map((char, i) =>
         char === ":" ? (
           <span key="colon" className="mx-1 select-none">

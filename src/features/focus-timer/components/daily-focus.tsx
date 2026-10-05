@@ -9,7 +9,7 @@ export default function DailyFocus({ hours, minutes }: DailyFocusProps) {
   const currentDate = useCurrentDate();
   return (
     <>
-      <div className="font-poppins text-brown-600 dark:text-brown-300/75 flex flex-col items-center justify-center text-sm font-normal">
+      <div className="font-poppins text-brown-600 dark:text-brown-300/75 accent:text-accent-muted flex flex-col items-center justify-center text-sm font-normal">
         {/* <p className="my-1 rounded-lg bg-zinc-800 p-1 px-3 text-zinc-50">
           {currentDate}
         </p> */}

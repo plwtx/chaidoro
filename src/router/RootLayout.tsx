@@ -6,6 +6,7 @@ import TimerIsland from "@/features/focus-timer/components/timer-island";
 import FocusFrame from "@/features/focus-timer/components/focus-frame";
 import { useTimerBridge } from "@/features/focus-timer/hooks/useTimer";
 import { useThemeSync } from "@/features/settings/hooks/useThemeSync";
+import { useAccentSync } from "@/features/settings/hooks/useAccentSync";
 import { useDynamicTitlebarSync } from "@/features/settings/hooks/useDynamicTitlebarSync";
 import { useReducedMotionSync } from "@/features/settings/hooks/useReducedMotionSync";
 import { useAppSounds } from "@/hooks/useAppSounds";
@@ -14,6 +15,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 export default function RootLayout() {
   useTimerBridge();
   useThemeSync();
+  useAccentSync();
   useDynamicTitlebarSync();
   useReducedMotionSync();
   useAppSounds();

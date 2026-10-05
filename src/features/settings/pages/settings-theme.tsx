@@ -1,7 +1,8 @@
 import HeaderDescription from "@/components/ui/header-description";
 import HorizontalDivider from "@/components/ui/horizontal-divider-line";
 import ColorModeSelector from "./settings-theme/color-mode-selector";
-// import AccentColorPicker from "./settings-theme/accent-color-picker";
+import AccentColorSetting from "./settings-theme/accent-color-setting";
+import BackgroundPatternSelector from "./settings-theme/background-pattern-selector";
 import BackgroundImageUpload from "./settings-theme/background-image-upload";
 
 export default function ThemeSettings() {
@@ -20,8 +21,10 @@ export default function ThemeSettings() {
       <div className="text-brown-800 dark:text-dark-100 flex flex-col gap-6">
         <ColorModeSelector />
         <HorizontalDivider />
-        {/* Turned off for time being because idk where to have accent colors ;-; */}
-        {/* <AccentColorPicker /> */}
+        <AccentColorSetting />
+        <HorizontalDivider />
+        <BackgroundPatternSelector />
+        <HorizontalDivider />
         <BackgroundImageUpload />
         {/* Empty bottom spacing */}
         <div className="h-9" />

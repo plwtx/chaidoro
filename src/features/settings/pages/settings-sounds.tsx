@@ -36,9 +36,9 @@ function VolumeSlider({
         disabled && "pointer-events-none opacity-40"
       )}
     >
-      <div className="bg-brown-200 dark:bg-dark-100 relative h-1 w-full rounded-full">
+      <div className="bg-brown-200 dark:bg-dark-100 accent:bg-accent/25 relative h-1 w-full rounded-full">
         <div
-          className="bg-brown-500 dark:bg-dark-600 absolute left-0 h-full rounded-full"
+          className="bg-brown-500 dark:bg-dark-600 accent:bg-accent absolute left-0 h-full rounded-full"
           style={{ width: `${value}%` }}
         />
         <div

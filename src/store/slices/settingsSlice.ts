@@ -3,12 +3,16 @@ import type {
   Features,
   Theme,
   ClockVariant,
+  BackgroundPattern,
   SoundSettings,
   SoundEventSetting,
 } from "@/types";
 import { db } from "@/db";
 import soundManifest from "@/assets/audio/sounds.json";
 import { DEFAULT_SHORTCUT_BINDINGS } from "@/lib/shortcuts";
+import { DEFAULT_ACCENT } from "@/lib/accent";
+import { normalizeHex } from "@/lib/color";
+import { isBackgroundPattern } from "@/lib/backgroundPatterns";
 
 // Sound defaults are derived from the manifest so a new event added to sounds.json automatically gets a default entry for existing users too (via the deep-merge in loadSettings).
 function buildDefaultSoundSettings(): SoundSettings {
@@ -35,7 +39,9 @@ export const DEFAULT_SETTINGS: Settings = {
   focusBorderEnabled: true,
   features: { taskManager: false, statistics: true },
   theme: "system",
-  accentColor: "#a78bfa",
+  accentEnabled: false,
+  accentColor: DEFAULT_ACCENT,
+  backgroundPattern: "none",
   backgroundImageKey: null,
   backgroundOpacity: 84,
   backgroundSaturation: 100,
@@ -61,7 +67,9 @@ export interface SettingsSliceActions {
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   toggleFeature: (feature: keyof Features) => void;
   setTheme: (theme: Theme) => Promise<void>;
+  setAccentEnabled: (enabled: boolean) => Promise<void>;
   setAccentColor: (color: string) => Promise<void>;
+  setBackgroundPattern: (pattern: BackgroundPattern) => Promise<void>;
   setBackgroundImageKey: (key: number | null) => Promise<void>;
   setClockVariant: (variant: ClockVariant) => Promise<void>;
   setDuration: (
@@ -126,6 +134,16 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
               ...stored.shortcuts?.bindings,
             },
           },
+          // Settings saved before the accent toggle existed never let the user pick a color (they hold the old bright violet default), so they start from the muted default. Otherwise a hand-edited backup with a broken hex falls back too.
+          accentColor:
+            stored.accentEnabled === undefined
+              ? DEFAULT_SETTINGS.accentColor
+              : (normalizeHex(stored.accentColor) ??
+                DEFAULT_SETTINGS.accentColor),
+          // Unknown pattern ids (e.g. from a newer or hand-edited backup) fall back to no pattern.
+          backgroundPattern: isBackgroundPattern(stored.backgroundPattern)
+            ? stored.backgroundPattern
+            : DEFAULT_SETTINGS.backgroundPattern,
         },
       });
     } else {
@@ -156,8 +174,16 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
     await get().updateSettings({ theme });
   },
 
+  setAccentEnabled: async (enabled) => {
+    await get().updateSettings({ accentEnabled: enabled });
+  },
+
   setAccentColor: async (color) => {
     await get().updateSettings({ accentColor: color });
+  },
+
+  setBackgroundPattern: async (pattern) => {
+    await get().updateSettings({ backgroundPattern: pattern });
   },
 
   setBackgroundImageKey: async (key) => {
