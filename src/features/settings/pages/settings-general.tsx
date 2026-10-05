@@ -6,6 +6,7 @@ import AutomationToggle from "../components/automation-toggle";
 import { showSettingsToast } from "../components/settings-toast";
 import { cn } from "@/lib/utils";
 import UserNotice from "../components/user-notice";
+import ReplayIntroRow from "../components/replay-intro-row";
 
 export default function General() {
   const reducedMotion = useAppStore((s) => s.settings.reducedMotion);
@@ -110,6 +111,9 @@ export default function General() {
               </section>
             </div>
           </section>
+          <HorizontalDivider />
+          {/* First-run intro */}
+          <ReplayIntroRow />
         </section>
       </main>
     </>

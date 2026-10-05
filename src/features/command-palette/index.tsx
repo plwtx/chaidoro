@@ -13,6 +13,7 @@ import {
   useSettingsTabStore,
 } from "@/features/settings/settingsTabStore";
 import { soundManager } from "@/lib/soundManager";
+import { replayIntro } from "@/features/intro/introState";
 import KeyCaps from "@/components/ui/key-caps";
 import { cn } from "@/lib/utils";
 import type { Theme } from "@/types";
@@ -82,6 +83,17 @@ function usePaletteCommands(): PaletteCommand[] {
         },
       });
     }
+
+    commands.push({
+      id: "replay-intro",
+      label: "Replay introduction",
+      description: "Opens the welcome tour and quick setup again.",
+      keywords: "intro introduction tour welcome onboarding setup help guide",
+      combo: null,
+      run: () => {
+        replayIntro();
+      },
+    });
 
     commands.push({
       id: "export-backup",

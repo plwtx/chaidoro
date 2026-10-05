@@ -10,10 +10,7 @@ import {
   DEFAULT_MASTER_VOLUME,
   type SoundEventId,
 } from "@/lib/soundManager";
-import {
-  notificationsSupported,
-  requestNotificationPermission,
-} from "@/lib/notifications";
+import { useNotificationsToggle } from "@/hooks/useNotificationsToggle";
 import { cn } from "@/lib/utils";
 
 function VolumeSlider({
@@ -145,31 +142,8 @@ function SoundEventRow({ id }: { id: SoundEventId }) {
 
 export default function SoundSettings() {
   const soundsEnabled = useAppStore((s) => s.settings.sounds.enabled);
-  const notificationsEnabled = useAppStore(
-    (s) => s.settings.notificationsEnabled
-  );
   const setSoundsEnabled = useAppStore((s) => s.setSoundsEnabled);
-  const setNotificationsEnabled = useAppStore((s) => s.setNotificationsEnabled);
-
-  const handleNotificationsToggle = async () => {
-    if (!notificationsEnabled) {
-      if (!notificationsSupported()) {
-        showSettingsToast("This browser does not support notifications.");
-        return;
-      }
-      const granted = await requestNotificationPermission();
-      if (!granted) {
-        showSettingsToast(
-          "Notifications are blocked by the browser. Allow them in site settings first."
-        );
-        return;
-      }
-    }
-    await setNotificationsEnabled(!notificationsEnabled);
-    showSettingsToast(
-      `Notifications ${notificationsEnabled ? "disabled" : "enabled"}.`
-    );
-  };
+  const notifications = useNotificationsToggle();
 
   return (
     <main>
@@ -185,8 +159,8 @@ export default function SoundSettings() {
         <AutomationToggle
           label="Browser notifications"
           description="Shows a system notification when a focus session or break completes. Useful when the tab is in the background."
-          checked={notificationsEnabled}
-          onChange={handleNotificationsToggle}
+          checked={notifications.enabled}
+          onChange={notifications.toggle}
         />
         <AutomationToggle
           label="Enable sounds"

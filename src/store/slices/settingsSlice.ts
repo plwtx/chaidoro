@@ -53,6 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reducedMotion: false,
   dynamicTitlebar: true,
   titlebarSeparator: "-",
+  introCompleted: false,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   lastActiveDate: new Date().toLocaleDateString("en-CA"),
   dailyFocusCount: 0,
@@ -88,6 +89,7 @@ export interface SettingsSliceActions {
     patch: Partial<SoundEventSetting>
   ) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
+  setIntroCompleted: (completed: boolean) => Promise<void>;
   setShortcutsEnabled: (enabled: boolean) => Promise<void>;
   /*
     Assigns a combo (or null to unbind). If another action already uses the combo it is stolen from it; returns that action's id so the UI can say it.
@@ -144,10 +146,17 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
           backgroundPattern: isBackgroundPattern(stored.backgroundPattern)
             ? stored.backgroundPattern
             : DEFAULT_SETTINGS.backgroundPattern,
+          // Rows saved before the intro existed (existing users, older backups) count as completed, so only brand-new users get the tour. A broken value counts as completed too.
+          introCompleted:
+            typeof stored.introCompleted === "boolean"
+              ? stored.introCompleted
+              : true,
         },
       });
     } else {
+      // First visit, or right after "Clear all data": the defaults go into memory too, not only to disk, so the screen (and the intro flag) start fresh.
       await db.settings.put(DEFAULT_SETTINGS);
+      set({ settings: DEFAULT_SETTINGS });
     }
   },
 
@@ -236,6 +245,10 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
 
   setNotificationsEnabled: async (enabled) => {
     await get().updateSettings({ notificationsEnabled: enabled });
+  },
+
+  setIntroCompleted: async (completed) => {
+    await get().updateSettings({ introCompleted: completed });
   },
 
   setShortcutsEnabled: async (enabled) => {

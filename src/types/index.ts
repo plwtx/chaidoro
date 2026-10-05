@@ -104,6 +104,7 @@ export interface Settings {
   reducedMotion: boolean;
   dynamicTitlebar: boolean;
   titlebarSeparator: string;
+  introCompleted: boolean;
   timezone: string;
   lastActiveDate: string;
   dailyFocusCount: number;

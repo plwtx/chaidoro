@@ -79,3 +79,49 @@ describe("loadSettings - background pattern", () => {
     expect((await loadStored(legacy)).backgroundPattern).toBe("none");
   });
 });
+
+describe("loadSettings - intro", () => {
+  it("keeps a stored intro flag", async () => {
+    const open = await loadStored({
+      ...DEFAULT_SETTINGS,
+      introCompleted: false,
+    });
+    expect(open.introCompleted).toBe(false);
+
+    const done = await loadStored({
+      ...DEFAULT_SETTINGS,
+      introCompleted: true,
+    });
+    expect(done.introCompleted).toBe(true);
+  });
+
+  it("counts settings saved before the intro existed as completed", async () => {
+    const legacy: Partial<Settings> = { ...DEFAULT_SETTINGS };
+    delete legacy.introCompleted;
+
+    expect((await loadStored(legacy)).introCompleted).toBe(true);
+  });
+
+  it("counts a broken value (hand-edited backup) as completed", async () => {
+    const settings = await loadStored({
+      ...DEFAULT_SETTINGS,
+      introCompleted: "yes" as unknown as boolean,
+    });
+    expect(settings.introCompleted).toBe(true);
+  });
+});
+
+describe("loadSettings - no stored row (first visit, or after Clear all data)", () => {
+  it("saves the defaults and puts them in memory, so the intro shows", async () => {
+    useAppStore.setState({
+      settings: { ...DEFAULT_SETTINGS, theme: "dark", introCompleted: true },
+    });
+    vi.mocked(db.settings.get).mockResolvedValue(undefined);
+
+    await useAppStore.getState().loadSettings();
+
+    expect(db.settings.put).toHaveBeenCalledWith(DEFAULT_SETTINGS);
+    expect(useAppStore.getState().settings).toEqual(DEFAULT_SETTINGS);
+    expect(useAppStore.getState().settings.introCompleted).toBe(false);
+  });
+});
