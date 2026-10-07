@@ -64,19 +64,27 @@ describe("loadSettings - background pattern", () => {
     expect(settings.backgroundPattern).toBe("waves");
   });
 
-  it("drops an unknown pattern to none", async () => {
+  it("keeps a stored none", async () => {
     const settings = await loadStored({
       ...DEFAULT_SETTINGS,
-      backgroundPattern: "plaid" as Settings["backgroundPattern"],
+      backgroundPattern: "none",
     });
     expect(settings.backgroundPattern).toBe("none");
   });
 
-  it("gives settings without the field no pattern", async () => {
+  it("drops an unknown pattern to the default (dots)", async () => {
+    const settings = await loadStored({
+      ...DEFAULT_SETTINGS,
+      backgroundPattern: "plaid" as Settings["backgroundPattern"],
+    });
+    expect(settings.backgroundPattern).toBe("dots");
+  });
+
+  it("gives settings saved before patterns existed the default (dots)", async () => {
     const legacy: Partial<Settings> = { ...DEFAULT_SETTINGS };
     delete legacy.backgroundPattern;
 
-    expect((await loadStored(legacy)).backgroundPattern).toBe("none");
+    expect((await loadStored(legacy)).backgroundPattern).toBe("dots");
   });
 });
 
@@ -123,5 +131,15 @@ describe("loadSettings - no stored row (first visit, or after Clear all data)", 
     expect(db.settings.put).toHaveBeenCalledWith(DEFAULT_SETTINGS);
     expect(useAppStore.getState().settings).toEqual(DEFAULT_SETTINGS);
     expect(useAppStore.getState().settings.introCompleted).toBe(false);
+  });
+
+  it("starts in the light theme with the dots pattern", async () => {
+    vi.mocked(db.settings.get).mockResolvedValue(undefined);
+
+    await useAppStore.getState().loadSettings();
+
+    const { settings } = useAppStore.getState();
+    expect(settings.theme).toBe("light");
+    expect(settings.backgroundPattern).toBe("dots");
   });
 });

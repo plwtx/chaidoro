@@ -38,10 +38,10 @@ export const DEFAULT_SETTINGS: Settings = {
   overtimeEnabled: true,
   focusBorderEnabled: true,
   features: { taskManager: false, statistics: true },
-  theme: "system",
+  theme: "light",
   accentEnabled: false,
   accentColor: DEFAULT_ACCENT,
-  backgroundPattern: "none",
+  backgroundPattern: "dots",
   backgroundImageKey: null,
   backgroundOpacity: 84,
   backgroundSaturation: 100,
@@ -142,7 +142,7 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
               ? DEFAULT_SETTINGS.accentColor
               : (normalizeHex(stored.accentColor) ??
                 DEFAULT_SETTINGS.accentColor),
-          // Unknown pattern ids (e.g. from a newer or hand-edited backup) fall back to no pattern.
+          // Unknown pattern ids (e.g. from a newer or hand-edited backup), and rows saved before patterns existed, fall back to the default pattern.
           backgroundPattern: isBackgroundPattern(stored.backgroundPattern)
             ? stored.backgroundPattern
             : DEFAULT_SETTINGS.backgroundPattern,
