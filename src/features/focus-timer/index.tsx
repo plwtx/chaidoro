@@ -4,6 +4,7 @@ import Clock from "@/features/focus-timer/components/clock.tsx";
 import { useTimer } from "./hooks/useTimer";
 import { useDailyTotal } from "./hooks/useDailyTotal";
 import DailyFocus from "./components/daily-focus";
+import ClockBackground from "./components/clock-background";
 import { AnimatePresence, motion } from "motion/react";
 
 const DevSpeedToggle = import.meta.env.DEV
@@ -51,12 +52,6 @@ export default function FocusTimer() {
     dismissOvertime,
   } = useTimer();
   const { hours, minutes } = useDailyTotal();
-  const backgroundImageKey = useAppStore((s) => s.settings.backgroundImageKey);
-  const backgroundOpacity = useAppStore((s) => s.settings.backgroundOpacity);
-  const backgroundSaturation = useAppStore(
-    (s) => s.settings.backgroundSaturation
-  );
-  const backgroundContrast = useAppStore((s) => s.settings.backgroundContrast);
 
   return (
     <>
@@ -64,31 +59,8 @@ export default function FocusTimer() {
       <DevSpeedToggle />
       {/* CLOCK SCREEN */}
       <main className="isolate z-0 h-full w-full overflow-hidden">
-        {/* BACKGROUND (Image + BG color) */}
-        <section className="z-0">
-          {/* Background image layer sits below the color overlay */}
-          {backgroundImageKey && (
-            <div
-              className="absolute inset-0 isolate z-0"
-              style={{
-                backgroundImage: "var(--bg-image)",
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                filter: `saturate(${backgroundSaturation}%) contrast(${backgroundContrast * 2}%)`,
-              }}
-            />
-          )}
-          {/* Background color overlay (opacity controlled by user when image is active) */}
-          <div
-            className="bg-brown-50 dark:bg-dark-600 absolute inset-0 isolate z-10 touch-none mix-blend-screen select-none dark:mix-blend-darken"
-            style={
-              backgroundImageKey
-                ? { opacity: backgroundOpacity / 100 }
-                : undefined
-            }
-          />
-        </section>
+        {/* BACKGROUND (Image + BG color, or pattern) */}
+        <ClockBackground />
         <div className="relative z-40 flex h-full w-full flex-col items-center justify-center gap-4">
           <DailyFocus hours={hours} minutes={minutes} />
 
@@ -99,7 +71,7 @@ export default function FocusTimer() {
                 key={i}
                 className={
                   i < focusCount
-                    ? "bg-brown-600 dark:bg-dark-100 h-4 w-4 rounded-full"
+                    ? "bg-brown-600 dark:bg-dark-100 accent:bg-accent h-4 w-4 rounded-full"
                     : "bg-brown-300 h-3 w-3 rounded-full dark:bg-black"
                 }
               />
@@ -132,7 +104,7 @@ export default function FocusTimer() {
                 >
                   <motion.button
                     onClick={addOvertime}
-                    className="bg-brown-500 dark:bg-dark-100 font-poppins cursor-pointer rounded-full px-8 py-3 font-semibold tracking-wide text-white dark:hover:text-white"
+                    className="bg-brown-500 dark:bg-dark-100 font-poppins accent:bg-accent-muted accent:text-accent-foreground accent:hover:text-accent-foreground cursor-pointer rounded-full px-8 py-3 font-semibold tracking-wide text-white dark:hover:text-white"
                     variants={{
                       hidden: {
                         x: 40,
@@ -202,7 +174,7 @@ export default function FocusTimer() {
                 <motion.button
                   key="start"
                   onClick={start}
-                  className="bg-brown-500 dark:bg-dark-900 font-poppins dark:text-dark-100 cursor-pointer rounded-full px-10 py-3 font-semibold tracking-wide text-white"
+                  className="bg-brown-500 dark:bg-dark-900 font-poppins dark:text-dark-100 accent:bg-accent-muted accent:text-accent-foreground cursor-pointer rounded-full px-10 py-3 font-semibold tracking-wide text-white"
                   initial={{ scale: 0.5, opacity: 0, filter: "blur(8px)" }}
                   animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
                   exit={{
@@ -245,7 +217,7 @@ export default function FocusTimer() {
                 >
                   <motion.button
                     onClick={status === "running" ? pause : start}
-                    className="bg-brown-500 dark:bg-dark-100 font-poppins cursor-pointer rounded-full px-8 py-3 font-semibold tracking-wide text-white dark:hover:text-white"
+                    className="bg-brown-500 dark:bg-dark-100 font-poppins accent:bg-accent-muted accent:text-accent-foreground accent:hover:text-accent-foreground cursor-pointer rounded-full px-8 py-3 font-semibold tracking-wide text-white dark:hover:text-white"
                     variants={{
                       hidden: {
                         x: 40,

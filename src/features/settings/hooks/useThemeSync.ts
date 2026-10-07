@@ -4,7 +4,6 @@ import { db } from "@/db";
 
 export function useThemeSync() {
   const theme = useAppStore((s) => s.settings.theme);
-  const accentColor = useAppStore((s) => s.settings.accentColor);
   const bgKey = useAppStore((s) => s.settings.backgroundImageKey);
 
   // Theme class
@@ -28,10 +27,7 @@ export function useThemeSync() {
     }
   }, [theme]);
 
-  // Accent color
-  useEffect(() => {
-    document.documentElement.style.setProperty("--accent", accentColor);
-  }, [accentColor]);
+  // Accent color lives in useAccentSync
 
   // Background image
   useEffect(() => {

@@ -16,6 +16,7 @@ import {
 import { soundManager } from "@/lib/soundManager";
 import { showSettingsToast } from "@/features/settings/components/settings-toast";
 import { usePaletteStore } from "@/features/command-palette/paletteStore";
+import { isIntroOpen } from "@/features/intro/introState";
 
 export function runShortcutAction(
   actionId: ShortcutActionId,
@@ -66,6 +67,8 @@ export function useKeyboardShortcuts() {
     const onKeyDown = (e: KeyboardEvent) => {
       if (shortcutCapture.active) return;
       if (usePaletteStore.getState().open) return;
+      // The intro handles its own keys (arrows, Escape) while it is open
+      if (isIntroOpen()) return;
       if (e.repeat) return;
       if (isEditableTarget(e.target)) return;
 

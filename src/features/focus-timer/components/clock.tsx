@@ -28,7 +28,7 @@ export default function Clock({ seconds }: ClockProps) {
       return <MatrixClock seconds={seconds} />;
     default:
       return (
-        <h1 className="font-poppins z-40 text-9xl font-extrabold antialiased">
+        <h1 className="font-poppins text-brown-800 dark:text-dark-100 accent:text-accent z-40 text-9xl font-extrabold antialiased">
           {formatTime(seconds)}
         </h1>
       );

@@ -8,6 +8,8 @@
 @import "tailwindcss";
 @plugin "@toolwind/corner-shape";
 @custom-variant dark (&:where(.dark, .dark *));
+/* Accent color turned on in settings (data-accent on <html>, set by useAccentSync) */
+@custom-variant accent (&:where([data-accent="on"], [data-accent="on"] *));
 
 @theme {
   /* Additional colors */
@@ -36,6 +38,14 @@
   --font-fragment-mono: "Fragment Mono", monospace;
 }
 
+/* Accent shades of the active theme as Tailwind colors (text-accent, bg-accent-muted, ...) */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-peak: var(--accent-peak);
+  --color-accent-foreground: var(--accent-foreground);
+}
+
 /* Side scrollbar */
 ::-webkit-scrollbar {
   width: 3px;
@@ -55,7 +65,13 @@
 }
 
 :root {
-  --accent: #453632;
+  /* Accent: per-theme shades come from useAccentSync, the fallbacks are the stock browns */
+  --accent: var(--accent-light, #453632);
+  --accent-muted: var(--accent-light-muted, #735f59);
+  /* Strongest stats level: the accent pushed toward the theme's ink (brown-800) */
+  --accent-peak: color-mix(in oklab, var(--accent) 70%, #262423);
+  /* Text on accent fills is the page background, which the shades are contrast-checked against */
+  --accent-foreground: #fbf8f7; /* brown-50 */
   --bg-image: none;
   --chart-used: #735f59;
   --chart-avail: #dbcbc6;
@@ -77,6 +93,9 @@
   --loading-muted: #98817a;
   --loading-track: #dbcbc6;
   --loading-fill: #453632;
+
+  /* Background pattern lines (accent off) */
+  --pattern-fg: rgb(115 95 89 / 0.16); /* brown-500 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -90,6 +109,12 @@
 }
 
 .dark {
+  --accent: var(--accent-dark, #bba6a0);
+  --accent-muted: var(--accent-dark-muted, #98817a);
+  /* brown-200 is the ink on dark */
+  --accent-peak: color-mix(in oklab, var(--accent) 70%, #dbcbc6);
+  --accent-foreground: #262524; /* dark-600 */
+
   --chart-used: #bba6a0;
   --chart-avail: #1b1a19;
 
@@ -103,6 +128,25 @@
   --heatmap-2: #735f59; /* brown-500 */
   --heatmap-3: #98817a; /* brown-400 */
   --heatmap-4: #bba6a0; /* brown-300 */
+
+  /* Background pattern lines (accent off) */
+  --pattern-fg: rgb(155 145 145 / 0.08); /* dark-100 */
+}
+
+/* Accent on: parts colored through tokens (stats, storage chart, desk, pattern) take the accent too. Components opt in with the accent: variant instead. */
+:root[data-accent="on"] {
+  --chart-used: var(--accent);
+  --heatmap-1: color-mix(in oklab, var(--accent) 35%, var(--heatmap-0));
+  --heatmap-2: color-mix(in oklab, var(--accent) 65%, var(--heatmap-0));
+  --heatmap-3: var(--accent);
+  --heatmap-4: var(--accent-peak);
+  --desk: color-mix(in oklab, var(--accent) 22%, #dbcbc6); /* brown-200 */
+  --pattern-fg: color-mix(in oklab, var(--accent-muted) 22%, transparent);
+}
+
+:root.dark[data-accent="on"] {
+  --desk: color-mix(in oklab, var(--accent) 12%, #121110);
+  --pattern-fg: color-mix(in oklab, var(--accent-muted) 12%, transparent);
 }
 
 /* Custom CSS */

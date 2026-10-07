@@ -75,7 +75,7 @@ export default function SlideClock({ seconds }: SlideClockProps) {
   const digits = formatDigits(seconds);
 
   return (
-    <div className="font-poppins text-brown-800 dark:text-dark-100 flex items-center text-9xl font-extrabold antialiased">
+    <div className="font-poppins text-brown-800 dark:text-dark-100 accent:text-accent flex items-center text-9xl font-extrabold antialiased">
       {digits.map((char, i) =>
         char === ":" ? (
           <span key="colon" className="mx-1 select-none">

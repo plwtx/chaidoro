@@ -6,30 +6,40 @@ import TimerIsland from "@/features/focus-timer/components/timer-island";
 import FocusFrame from "@/features/focus-timer/components/focus-frame";
 import { useTimerBridge } from "@/features/focus-timer/hooks/useTimer";
 import { useThemeSync } from "@/features/settings/hooks/useThemeSync";
+import { useAccentSync } from "@/features/settings/hooks/useAccentSync";
 import { useDynamicTitlebarSync } from "@/features/settings/hooks/useDynamicTitlebarSync";
 import { useReducedMotionSync } from "@/features/settings/hooks/useReducedMotionSync";
 import { useAppSounds } from "@/hooks/useAppSounds";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import IntroGate from "@/features/intro/intro-gate";
+import { useIntroOpen } from "@/features/intro/introState";
 
 export default function RootLayout() {
   useTimerBridge();
   useThemeSync();
+  useAccentSync();
   useDynamicTitlebarSync();
   useReducedMotionSync();
   useAppSounds();
   useKeyboardShortcuts();
+  const introOpen = useIntroOpen();
 
   return (
     // Everything the user sees lives inside the frame, so a focus cycle pulls the whole app back off the desk instead of drawing over it.
     <FocusFrame>
       <div className="bg-brown-50 relative h-screen w-full selection:bg-black/75 selection:text-white">
-        <div className="absolute top-3 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2">
-          <TimerIsland />
-          <Navbar />
+        {/* While the intro is open the app behind it is inert: no focus, no clicks, hidden from screen readers */}
+        <div inert={introOpen} className="relative h-full w-full">
+          <div className="absolute top-3 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2">
+            <TimerIsland />
+            <Navbar />
+          </div>
+          <AnimatedRoutes />
+          {/* Ctrl+K command palette */}
+          <CommandPalette />
         </div>
-        <AnimatedRoutes />
-        {/* Ctrl+K command palette */}
-        <CommandPalette />
+        {/* First-run intro: lazy-loaded, only while it is not completed */}
+        <IntroGate />
         {/* Notification toaster */}
         <Toaster position="bottom-center" />
       </div>

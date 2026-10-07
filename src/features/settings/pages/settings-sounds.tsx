@@ -7,12 +7,10 @@ import { showSettingsToast } from "../components/settings-toast";
 import {
   soundManager,
   SOUND_EVENTS,
+  DEFAULT_MASTER_VOLUME,
   type SoundEventId,
 } from "@/lib/soundManager";
-import {
-  notificationsSupported,
-  requestNotificationPermission,
-} from "@/lib/notifications";
+import { useNotificationsToggle } from "@/hooks/useNotificationsToggle";
 import { cn } from "@/lib/utils";
 
 function VolumeSlider({
@@ -35,9 +33,9 @@ function VolumeSlider({
         disabled && "pointer-events-none opacity-40"
       )}
     >
-      <div className="bg-brown-200 dark:bg-dark-100 relative h-1 w-full rounded-full">
+      <div className="bg-brown-200 dark:bg-dark-100 accent:bg-accent/25 relative h-1 w-full rounded-full">
         <div
-          className="bg-brown-500 dark:bg-dark-600 absolute left-0 h-full rounded-full"
+          className="bg-brown-500 dark:bg-dark-600 accent:bg-accent absolute left-0 h-full rounded-full"
           style={{ width: `${value}%` }}
         />
         <div
@@ -64,7 +62,7 @@ function VolumeSlider({
 function MasterVolumeRow() {
   const masterEnabled = useAppStore((s) => s.settings.sounds.enabled);
   const masterVolume = useAppStore(
-    (s) => s.settings.sounds.masterVolume ?? 100
+    (s) => s.settings.sounds.masterVolume ?? DEFAULT_MASTER_VOLUME
   );
   const setSoundsMasterVolume = useAppStore((s) => s.setSoundsMasterVolume);
 
@@ -144,31 +142,8 @@ function SoundEventRow({ id }: { id: SoundEventId }) {
 
 export default function SoundSettings() {
   const soundsEnabled = useAppStore((s) => s.settings.sounds.enabled);
-  const notificationsEnabled = useAppStore(
-    (s) => s.settings.notificationsEnabled
-  );
   const setSoundsEnabled = useAppStore((s) => s.setSoundsEnabled);
-  const setNotificationsEnabled = useAppStore((s) => s.setNotificationsEnabled);
-
-  const handleNotificationsToggle = async () => {
-    if (!notificationsEnabled) {
-      if (!notificationsSupported()) {
-        showSettingsToast("This browser does not support notifications.");
-        return;
-      }
-      const granted = await requestNotificationPermission();
-      if (!granted) {
-        showSettingsToast(
-          "Notifications are blocked by the browser. Allow them in site settings first."
-        );
-        return;
-      }
-    }
-    await setNotificationsEnabled(!notificationsEnabled);
-    showSettingsToast(
-      `Notifications ${notificationsEnabled ? "disabled" : "enabled"}.`
-    );
-  };
+  const notifications = useNotificationsToggle();
 
   return (
     <main>
@@ -184,8 +159,8 @@ export default function SoundSettings() {
         <AutomationToggle
           label="Browser notifications"
           description="Shows a system notification when a focus session or break completes. Useful when the tab is in the background."
-          checked={notificationsEnabled}
-          onChange={handleNotificationsToggle}
+          checked={notifications.enabled}
+          onChange={notifications.toggle}
         />
         <AutomationToggle
           label="Enable sounds"

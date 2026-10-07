@@ -3,12 +3,16 @@ import type {
   Features,
   Theme,
   ClockVariant,
+  BackgroundPattern,
   SoundSettings,
   SoundEventSetting,
 } from "@/types";
 import { db } from "@/db";
 import soundManifest from "@/assets/audio/sounds.json";
 import { DEFAULT_SHORTCUT_BINDINGS } from "@/lib/shortcuts";
+import { DEFAULT_ACCENT } from "@/lib/accent";
+import { normalizeHex } from "@/lib/color";
+import { isBackgroundPattern } from "@/lib/backgroundPatterns";
 
 // Sound defaults are derived from the manifest so a new event added to sounds.json automatically gets a default entry for existing users too (via the deep-merge in loadSettings).
 function buildDefaultSoundSettings(): SoundSettings {
@@ -16,7 +20,11 @@ function buildDefaultSoundSettings(): SoundSettings {
   for (const [id, def] of Object.entries(soundManifest.events)) {
     events[id] = { enabled: true, volume: def.defaultVolume ?? 70 };
   }
-  return { enabled: true, masterVolume: 100, events };
+  return {
+    enabled: true,
+    masterVolume: soundManifest.master.defaultVolume,
+    events,
+  };
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -30,8 +38,10 @@ export const DEFAULT_SETTINGS: Settings = {
   overtimeEnabled: true,
   focusBorderEnabled: true,
   features: { taskManager: false, statistics: true },
-  theme: "system",
-  accentColor: "#a78bfa",
+  theme: "light",
+  accentEnabled: false,
+  accentColor: DEFAULT_ACCENT,
+  backgroundPattern: "dots",
   backgroundImageKey: null,
   backgroundOpacity: 84,
   backgroundSaturation: 100,
@@ -43,6 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reducedMotion: false,
   dynamicTitlebar: true,
   titlebarSeparator: "-",
+  introCompleted: false,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   lastActiveDate: new Date().toLocaleDateString("en-CA"),
   dailyFocusCount: 0,
@@ -57,7 +68,9 @@ export interface SettingsSliceActions {
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   toggleFeature: (feature: keyof Features) => void;
   setTheme: (theme: Theme) => Promise<void>;
+  setAccentEnabled: (enabled: boolean) => Promise<void>;
   setAccentColor: (color: string) => Promise<void>;
+  setBackgroundPattern: (pattern: BackgroundPattern) => Promise<void>;
   setBackgroundImageKey: (key: number | null) => Promise<void>;
   setClockVariant: (variant: ClockVariant) => Promise<void>;
   setDuration: (
@@ -76,6 +89,7 @@ export interface SettingsSliceActions {
     patch: Partial<SoundEventSetting>
   ) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
+  setIntroCompleted: (completed: boolean) => Promise<void>;
   setShortcutsEnabled: (enabled: boolean) => Promise<void>;
   /*
     Assigns a combo (or null to unbind). If another action already uses the combo it is stolen from it; returns that action's id so the UI can say it.
@@ -122,10 +136,27 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
               ...stored.shortcuts?.bindings,
             },
           },
+          // Settings saved before the accent toggle existed never let the user pick a color (they hold the old bright violet default), so they start from the muted default. Otherwise a hand-edited backup with a broken hex falls back too.
+          accentColor:
+            stored.accentEnabled === undefined
+              ? DEFAULT_SETTINGS.accentColor
+              : (normalizeHex(stored.accentColor) ??
+                DEFAULT_SETTINGS.accentColor),
+          // Unknown pattern ids (e.g. from a newer or hand-edited backup), and rows saved before patterns existed, fall back to the default pattern.
+          backgroundPattern: isBackgroundPattern(stored.backgroundPattern)
+            ? stored.backgroundPattern
+            : DEFAULT_SETTINGS.backgroundPattern,
+          // Rows saved before the intro existed (existing users, older backups) count as completed, so only brand-new users get the tour. A broken value counts as completed too.
+          introCompleted:
+            typeof stored.introCompleted === "boolean"
+              ? stored.introCompleted
+              : true,
         },
       });
     } else {
+      // First visit, or right after "Clear all data": the defaults go into memory too, not only to disk, so the screen (and the intro flag) start fresh.
       await db.settings.put(DEFAULT_SETTINGS);
+      set({ settings: DEFAULT_SETTINGS });
     }
   },
 
@@ -152,8 +183,16 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
     await get().updateSettings({ theme });
   },
 
+  setAccentEnabled: async (enabled) => {
+    await get().updateSettings({ accentEnabled: enabled });
+  },
+
   setAccentColor: async (color) => {
     await get().updateSettings({ accentColor: color });
+  },
+
+  setBackgroundPattern: async (pattern) => {
+    await get().updateSettings({ backgroundPattern: pattern });
   },
 
   setBackgroundImageKey: async (key) => {
@@ -206,6 +245,10 @@ export const createSettingsSlice = (set, get): SettingsSlice => ({
 
   setNotificationsEnabled: async (enabled) => {
     await get().updateSettings({ notificationsEnabled: enabled });
+  },
+
+  setIntroCompleted: async (completed) => {
+    await get().updateSettings({ introCompleted: completed });
   },
 
   setShortcutsEnabled: async (enabled) => {

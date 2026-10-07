@@ -62,7 +62,7 @@ export default function MorphClock({ seconds }: MorphClockProps) {
   const digits = formatDigits(seconds);
 
   return (
-    <div className="text-brown-800 dark:text-dark-100 flex items-center gap-1 text-9xl font-extrabold">
+    <div className="text-brown-800 dark:text-dark-100 accent:text-accent flex items-center gap-1 text-9xl font-extrabold">
       {digits.map((char, i) =>
         char === ":" ? (
           <span key="colon" className="mx-1 select-none">

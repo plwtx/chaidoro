@@ -27,7 +27,7 @@ export default function UserNotice() {
             more about it on{" "}
             <a
               className="font-semibold underline"
-              href="https://github.com/plwtx/chai.study"
+              href="https://github.com/plwtx/chaidoro"
             >
               GitHub
             </a>
