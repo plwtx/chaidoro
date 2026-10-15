@@ -15,6 +15,7 @@ export default function AccentColorSetting() {
       <div className="flex w-full items-center justify-between gap-6">
         <SubHeaderDescription
           header={"Accent color"}
+          className="max-w-200"
           description={
             "Tints the clock and a few subtle details (session dots, buttons, toggles, sliders, the focus edge and stats) with a color of your choice. Each theme gets its own readable shade."
           }
